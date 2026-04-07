@@ -360,9 +360,7 @@ class ScanProvider with ChangeNotifier {
       _addLogMessage('🌐 PASSO 2: Enviando dados para API...');
 
       // Coletar arquivos únicos que tiveram achados para upload ao backend
-      final uniqueFilePaths = result.foundData
-          .map((d) => d.filePath)
-          .toSet();
+      final uniqueFilePaths = result.foundData.map((d) => d.filePath).toSet();
       final filesToUpload = uniqueFilePaths
           .map((p) => File(p))
           .where((f) => f.existsSync())

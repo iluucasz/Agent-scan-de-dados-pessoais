@@ -16,6 +16,7 @@ enum PatternCategory {
 enum StructuredDataValidatorType {
   cpf,
   cnpj,
+  creditCard,
 }
 
 class DataPattern {
@@ -89,7 +90,7 @@ class DataPatterns {
     name: 'Título de Eleitor',
     description: 'Título de Eleitor',
     category: PatternCategory.id,
-    regex: r'\d{4}\s?\d{4}\s?\d{4}',
+    regex: r'(?<!\d)\d{4}\s?\d{4}\s?\d{4}(?!\d)',
   );
 
   static const pisPasep = DataPattern(
@@ -201,7 +202,8 @@ class DataPatterns {
     name: 'Cartão de Crédito',
     description: 'Número de cartão de crédito',
     category: PatternCategory.financial,
-    regex: r'\d{4}\s?\d{4}\s?\d{4}\s?\d{4}',
+    regex: r'(?<!\d)\d{4}[\s-]?\d{4}[\s-]?\d{4}[\s-]?\d{4}(?!\d)',
+    structuredValidator: StructuredDataValidatorType.creditCard,
   );
 
   static const cvv = DataPattern(

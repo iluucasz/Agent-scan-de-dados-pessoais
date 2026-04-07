@@ -61,7 +61,7 @@ class ScanFlowService {
         'Criando configuração de scan na API...',
       );
 
-      final apiConfig = _buildScanConfigApi(localConfig);
+      final apiConfig = _buildScanConfigApi(localConfig, decoratedScanName);
       stdout.writeln('📤 Enviando configuração: ${apiConfig.name}');
       final configResponse = await _apiService.createScanConfig(apiConfig);
       stdout.writeln('✅ Configuração criada com ID: ${configResponse.id}');
@@ -175,13 +175,9 @@ class ScanFlowService {
   }
 
   /// Constrói configuração de scan para API a partir da config local
-  ScanConfigApi _buildScanConfigApi(ScanConfig localConfig) {
+  ScanConfigApi _buildScanConfigApi(ScanConfig localConfig, String decoratedName) {
     return ScanConfigApi(
-      name: _decorateScanName(
-        localConfig.scanName.isNotEmpty
-            ? localConfig.scanName
-            : 'Scan ${DateTime.now()}',
-      ),
+      name: decoratedName,
       description: 'Scan executado via app Flutter - ${localConfig.path}',
       sourceType: 'directory',
       connectionConfig: ConnectionConfig(

@@ -22,13 +22,14 @@ class ScanRunResponse {
       jobId: json['jobId'] as int? ?? 0,
       scanName: json['scanName'] as String? ?? '',
       uploadedFiles: (json['uploadedFiles'] as List<dynamic>?)
-              ?.map((file) =>
-                  UploadedFile.fromJson(file as Map<String, dynamic>))
+              ?.map(
+                  (file) => UploadedFile.fromJson(file as Map<String, dynamic>))
               .toList() ??
           [],
       stats: json['stats'] != null
           ? UploadStats.fromJson(json['stats'] as Map<String, dynamic>)
-          : UploadStats(totalFiles: 0, uploadedSuccessfully: 0, totalSizeBytes: 0),
+          : UploadStats(
+              totalFiles: 0, uploadedSuccessfully: 0, totalSizeBytes: 0),
     );
   }
 }

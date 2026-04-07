@@ -22,6 +22,8 @@ abstract final class StructuredDataValidators {
         return validateCpf(value);
       case StructuredDataValidatorType.cnpj:
         return validateCnpj(value);
+      case StructuredDataValidatorType.creditCard:
+        return validateCreditCard(value);
       case null:
         return null;
     }
@@ -84,6 +86,41 @@ abstract final class StructuredDataValidators {
       isValid: isValid,
       normalizedValue: normalizedValue,
       confidenceOverride: isValid ? 0.98 : null,
+    );
+  }
+
+  /// Valida número de cartão de crédito via algoritmo de Luhn.
+  static StructuredValidationResult validateCreditCard(String value) {
+    final normalizedValue = digitsOnly(value);
+
+    if (normalizedValue.length < 13 ||
+        normalizedValue.length > 19 ||
+        isRepeatedDigits(normalizedValue)) {
+      return StructuredValidationResult(
+        isValid: false,
+        normalizedValue: normalizedValue,
+      );
+    }
+
+    // Luhn algorithm
+    var sum = 0;
+    var alternate = false;
+    for (var i = normalizedValue.length - 1; i >= 0; i--) {
+      var digit = int.parse(normalizedValue[i]);
+      if (alternate) {
+        digit *= 2;
+        if (digit > 9) digit -= 9;
+      }
+      sum += digit;
+      alternate = !alternate;
+    }
+
+    final isValid = sum % 10 == 0;
+
+    return StructuredValidationResult(
+      isValid: isValid,
+      normalizedValue: normalizedValue,
+      confidenceOverride: isValid ? 0.95 : null,
     );
   }
 

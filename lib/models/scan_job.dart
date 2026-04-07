@@ -25,11 +25,13 @@ class ScanJob {
 
   factory ScanJob.fromJson(Map<String, dynamic> json) {
     return ScanJob(
-      id: json['id'] as int,
+      id: json['id'] as int? ?? 0,
       configId: json['configId'] as int?,
-      organizationId: json['organizationId'] as int,
-      status: json['status'] as String,
-      startedAt: DateTime.parse(json['startedAt'] as String),
+      organizationId: json['organizationId'] as int? ?? 0,
+      status: json['status'] as String? ?? 'unknown',
+      startedAt: json['startedAt'] != null
+          ? DateTime.parse(json['startedAt'] as String)
+          : DateTime.now(),
       completedAt: json['completedAt'] != null
           ? DateTime.parse(json['completedAt'] as String)
           : null,
@@ -37,9 +39,13 @@ class ScanJob {
               ?.map((item) => FoundItem.fromJson(item as Map<String, dynamic>))
               .toList() ??
           [],
-      stats: ScanJobStats.fromJson(json['stats'] as Map<String, dynamic>),
+      stats: json['stats'] != null
+          ? ScanJobStats.fromJson(json['stats'] as Map<String, dynamic>)
+          : ScanJobStats(totalFiles: 0, filesWithData: 0, totalDataItems: 0, executionTime: 0),
       error: json['error'] as String?,
-      createdAt: DateTime.parse(json['createdAt'] as String),
+      createdAt: json['createdAt'] != null
+          ? DateTime.parse(json['createdAt'] as String)
+          : DateTime.now(),
     );
   }
 
@@ -78,11 +84,11 @@ class FoundItem {
 
   factory FoundItem.fromJson(Map<String, dynamic> json) {
     return FoundItem(
-      type: json['type'] as String,
-      value: json['value'] as String,
-      file: json['file'] as String,
-      line: json['line'] as int,
-      confidence: (json['confidence'] as num).toDouble(),
+      type: json['type'] as String? ?? '',
+      value: json['value'] as String? ?? '',
+      file: json['file'] as String? ?? '',
+      line: json['line'] as int? ?? 0,
+      confidence: (json['confidence'] as num?)?.toDouble() ?? 0.0,
       cdnUrl: json['cdnUrl'] as String?,
     );
   }
@@ -122,10 +128,10 @@ class ScanJobStats {
 
   factory ScanJobStats.fromJson(Map<String, dynamic> json) {
     return ScanJobStats(
-      totalFiles: json['totalFiles'] as int,
-      filesWithData: json['filesWithData'] as int,
-      totalDataItems: json['totalDataItems'] as int,
-      executionTime: json['executionTime'] as int,
+      totalFiles: json['totalFiles'] as int? ?? 0,
+      filesWithData: json['filesWithData'] as int? ?? 0,
+      totalDataItems: json['totalDataItems'] as int? ?? 0,
+      executionTime: json['executionTime'] as int? ?? 0,
       errors: json['errors'] as int? ?? 0,
       clientVersion: json['clientVersion'] as String?,
       systemInfo: json['systemInfo'] as Map<String, dynamic>?,
