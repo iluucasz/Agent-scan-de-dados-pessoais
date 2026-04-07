@@ -13,6 +13,11 @@ enum PatternCategory {
   const PatternCategory(this.code, this.label);
 }
 
+enum StructuredDataValidatorType {
+  cpf,
+  cnpj,
+}
+
 class DataPattern {
   final String id;
   final String name;
@@ -20,6 +25,7 @@ class DataPattern {
   final PatternCategory category;
   final String regex;
   final bool enabled;
+  final StructuredDataValidatorType? structuredValidator;
 
   const DataPattern({
     required this.id,
@@ -28,19 +34,30 @@ class DataPattern {
     required this.category,
     required this.regex,
     this.enabled = true,
+    this.structuredValidator,
   });
 }
 
 // Catálogo completo de padrões de dados pessoais (baseado no projeto React)
 class DataPatterns {
   // ========== DOCUMENTOS DE IDENTIFICAÇÃO ==========
-  
+
   static const cpf = DataPattern(
     id: 'cpf',
     name: 'CPF',
     description: 'Cadastro de Pessoa Física',
     category: PatternCategory.id,
-    regex: r'\d{3}\.?\d{3}\.?\d{3}-?\d{2}',
+    regex: r'(?<!\d)\d{3}\.?\d{3}\.?\d{3}-?\d{2}(?!\d)',
+    structuredValidator: StructuredDataValidatorType.cpf,
+  );
+
+  static const cnpj = DataPattern(
+    id: 'cnpj',
+    name: 'CNPJ',
+    description: 'Cadastro Nacional da Pessoa Jurídica',
+    category: PatternCategory.id,
+    regex: r'(?<!\d)\d{2}\.?\d{3}\.?\d{3}/?\d{4}-?\d{2}(?!\d)',
+    structuredValidator: StructuredDataValidatorType.cnpj,
   );
 
   static const rg = DataPattern(
@@ -106,7 +123,8 @@ class DataPatterns {
     name: 'Nome Completo',
     description: 'Nome completo de pessoa',
     category: PatternCategory.personal,
-    regex: r'[A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚÇ][a-zàáâãèéêìíòóôõùúç]+\s+[A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚÇ][a-zàáâãèéêìíòóôõùúç]+',
+    regex:
+        r'[A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚÇ][a-zàáâãèéêìíòóôõùúç]+\s+[A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚÇ][a-zàáâãèéêìíòóôõùúç]+',
   );
 
   static const dataNascimento = DataPattern(
@@ -122,7 +140,8 @@ class DataPatterns {
     name: 'Nome da Mãe',
     description: 'Nome completo da mãe',
     category: PatternCategory.personal,
-    regex: r'(?:mãe|mae|mother):\s*[A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚÇ][a-zàáâãèéêìíòóôõùúç\s]+',
+    regex:
+        r'(?:mãe|mae|mother):\s*[A-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚÇ][a-zàáâãèéêìíòóôõùúç\s]+',
   );
 
   static const nomePai = DataPattern(
@@ -363,23 +382,24 @@ class DataPatterns {
 
   // Lista completa de todos os padrões
   static List<DataPattern> get allPatterns => [
-    // ID
-    cpf, rg, cnh, passaporte, tituloEleitor, pisPasep, ctps, certidaoNascimento,
-    // PERSONAL
-    nomeCompleto, dataNascimento, nomeMae, nomePai,
-    // CONTACT
-    email, telefone, celular, cep, endereco,
-    // FINANCIAL
-    cartaoCredito, cvv, contaBancaria, agenciaBancaria, pix, salario,
-    // SENSITIVE
-    senhaTexto, tokenAcesso, chaveApi,
-    // HEALTH
-    cartaoSus, diagnostico, medicamento, prontuario, exame,
-    // BIOMETRIC
-    impressaoDigital, reconhecimentoFacial, iris,
-    // LOCATION
-    coordenadasGps, latitude, longitude, enderecoIp, placaVeiculo,
-  ];
+        // ID
+        cpf, cnpj, rg, cnh, passaporte, tituloEleitor, pisPasep, ctps,
+        certidaoNascimento,
+        // PERSONAL
+        nomeCompleto, dataNascimento, nomeMae, nomePai,
+        // CONTACT
+        email, telefone, celular, cep, endereco,
+        // FINANCIAL
+        cartaoCredito, cvv, contaBancaria, agenciaBancaria, pix, salario,
+        // SENSITIVE
+        senhaTexto, tokenAcesso, chaveApi,
+        // HEALTH
+        cartaoSus, diagnostico, medicamento, prontuario, exame,
+        // BIOMETRIC
+        impressaoDigital, reconhecimentoFacial, iris,
+        // LOCATION
+        coordenadasGps, latitude, longitude, enderecoIp, placaVeiculo,
+      ];
 
   // Obter padrões por categoria
   static List<DataPattern> getByCategory(PatternCategory category) {

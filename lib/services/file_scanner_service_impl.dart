@@ -10,6 +10,7 @@ import '../models/scan_config.dart';
 import '../models/scan_result.dart';
 import '../models/personal_data.dart';
 import '../constants/data_patterns.dart';
+import '../validators/structured_data_validators.dart';
 
 class _PreparedPattern {
   final DataPattern pattern;
@@ -236,6 +237,14 @@ class FileScannerServiceImpl {
 
           for (final match in matches) {
             final value = match.group(0) ?? '';
+            final structuredValidation = StructuredDataValidators.validate(
+              pattern.structuredValidator,
+              value,
+            );
+            if (structuredValidation != null && !structuredValidation.isValid) {
+              continue;
+            }
+
             final startPos = (match.start - 30).clamp(0, line.length);
             final endPos = (match.end + 30).clamp(0, line.length);
             final context = line.substring(startPos, endPos);
@@ -248,7 +257,11 @@ class FileScannerServiceImpl {
               value: value,
               filePath: file.path,
               lineNumber: lineNum + 1,
-              confidence: _calculateConfidence(pattern, value),
+              confidence: _calculateConfidence(
+                pattern,
+                value,
+                structuredValidation: structuredValidation,
+              ),
               context: context,
               position: match.start,
               category: _mapCategoryToApi(pattern.category),
@@ -494,7 +507,15 @@ class FileScannerServiceImpl {
   }
 
   /// Calcula confiança da detecção
-  double _calculateConfidence(DataPattern pattern, String value) {
+  double _calculateConfidence(
+    DataPattern pattern,
+    String value, {
+    StructuredValidationResult? structuredValidation,
+  }) {
+    if (structuredValidation?.confidenceOverride != null) {
+      return structuredValidation!.confidenceOverride!;
+    }
+
     // Confiança base
     double confidence = 0.7;
 

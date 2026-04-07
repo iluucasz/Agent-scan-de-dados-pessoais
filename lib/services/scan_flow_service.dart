@@ -146,6 +146,15 @@ class ScanFlowService {
           await _apiService.sendExternalScanResults(payload);
       stdout.writeln('✅ Resultados enviados: ${resultsResponse.message}');
 
+      if (resultsResponse.jobId != null) {
+        stdout.writeln(
+            '📊 Job ID retornado pelo backend: ${resultsResponse.jobId}');
+      }
+      if (resultsResponse.scanId != null) {
+        stdout.writeln(
+            '📊 Scan ID retornado pelo backend: ${resultsResponse.scanId}');
+      }
+
       if (resultsResponse.success) {
         stdout.writeln('🎉 Scan concluído com sucesso! ScanId: $scanId');
         onPhaseChange?.call(
@@ -154,7 +163,7 @@ class ScanFlowService {
         );
       }
 
-      return scanId;
+      return resultsResponse.scanId ?? scanId;
     } catch (e) {
       stderr.writeln('❌ ERRO no fluxo de scan: $e');
       onPhaseChange?.call(

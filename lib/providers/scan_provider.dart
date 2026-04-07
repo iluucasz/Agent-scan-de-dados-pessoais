@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import '../models/scan_config.dart';
@@ -357,6 +358,18 @@ class ScanProvider with ChangeNotifier {
 
       // PASSO 2: Enviar para API (3 fases)
       _addLogMessage('🌐 PASSO 2: Enviando dados para API...');
+
+      // Coletar arquivos únicos que tiveram achados para upload ao backend
+      final uniqueFilePaths = result.foundData
+          .map((d) => d.filePath)
+          .toSet();
+      final filesToUpload = uniqueFilePaths
+          .map((p) => File(p))
+          .where((f) => f.existsSync())
+          .toList();
+      _addLogMessage(
+          '📤 ${filesToUpload.length} arquivo(s) com achados para upload');
+
       await scanFlowService.executeFullScanFlow(
         localConfig: _currentConfig!,
         currentUser: currentUser,
@@ -364,6 +377,7 @@ class ScanProvider with ChangeNotifier {
         totalFiles: result.totalFilesScanned,
         processedFiles: result.totalFilesScanned,
         executionTimeMs: executionTime,
+        filesToUpload: filesToUpload,
         onPhaseChange: (phase, message) {
           _phaseMessage = message;
 
