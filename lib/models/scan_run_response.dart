@@ -17,14 +17,18 @@ class ScanRunResponse {
 
   factory ScanRunResponse.fromJson(Map<String, dynamic> json) {
     return ScanRunResponse(
-      success: json['success'] as bool,
-      message: json['message'] as String,
-      jobId: json['jobId'] as int,
-      scanName: json['scanName'] as String,
-      uploadedFiles: (json['uploadedFiles'] as List<dynamic>)
-          .map((file) => UploadedFile.fromJson(file as Map<String, dynamic>))
-          .toList(),
-      stats: UploadStats.fromJson(json['stats'] as Map<String, dynamic>),
+      success: json['success'] as bool? ?? true,
+      message: json['message'] as String? ?? '',
+      jobId: json['jobId'] as int? ?? 0,
+      scanName: json['scanName'] as String? ?? '',
+      uploadedFiles: (json['uploadedFiles'] as List<dynamic>?)
+              ?.map((file) =>
+                  UploadedFile.fromJson(file as Map<String, dynamic>))
+              .toList() ??
+          [],
+      stats: json['stats'] != null
+          ? UploadStats.fromJson(json['stats'] as Map<String, dynamic>)
+          : UploadStats(totalFiles: 0, uploadedSuccessfully: 0, totalSizeBytes: 0),
     );
   }
 }
@@ -42,9 +46,9 @@ class UploadedFile {
 
   factory UploadedFile.fromJson(Map<String, dynamic> json) {
     return UploadedFile(
-      originalName: json['originalName'] as String,
-      digitalOceanUrl: json['digitalOceanUrl'] as String,
-      size: json['size'] as int,
+      originalName: json['originalName'] as String? ?? '',
+      digitalOceanUrl: json['digitalOceanUrl'] as String? ?? '',
+      size: json['size'] as int? ?? 0,
     );
   }
 }
@@ -62,9 +66,9 @@ class UploadStats {
 
   factory UploadStats.fromJson(Map<String, dynamic> json) {
     return UploadStats(
-      totalFiles: json['totalFiles'] as int,
-      uploadedSuccessfully: json['uploadedSuccessfully'] as int,
-      totalSizeBytes: json['totalSizeBytes'] as int,
+      totalFiles: json['totalFiles'] as int? ?? 0,
+      uploadedSuccessfully: json['uploadedSuccessfully'] as int? ?? 0,
+      totalSizeBytes: json['totalSizeBytes'] as int? ?? 0,
     );
   }
 }

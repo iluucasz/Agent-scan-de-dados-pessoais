@@ -316,6 +316,9 @@ class ApiService {
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
 
+      debugPrint('🌐 runScan response status: ${response.statusCode}');
+      debugPrint('🌐 runScan response body: ${response.body}');
+
       if (response.statusCode == 200 || response.statusCode == 201) {
         final data = jsonDecode(response.body) as Map<String, dynamic>;
         return ScanRunResponse.fromJson(data);
