@@ -1,8 +1,10 @@
+/// Modelo alinhado com GET /api/data-scan-jobs/:id do backend.
+/// Status possíveis: 'pending' | 'in_progress' | 'completed' | 'failed'
 class ScanJob {
   final int id;
   final int? configId;
   final int organizationId;
-  final String status; // 'pending' | 'running' | 'completed' | 'failed'
+  final String status;
   final DateTime startedAt;
   final DateTime? completedAt;
   final List<FoundItem> foundItems;
@@ -25,27 +27,25 @@ class ScanJob {
 
   factory ScanJob.fromJson(Map<String, dynamic> json) {
     return ScanJob(
-      id: json['id'] as int? ?? 0,
-      configId: json['configId'] as int?,
-      organizationId: json['organizationId'] as int? ?? 0,
-      status: json['status'] as String? ?? 'unknown',
-      startedAt: json['startedAt'] != null
-          ? DateTime.parse(json['startedAt'] as String)
-          : DateTime.now(),
-      completedAt: json['completedAt'] != null
-          ? DateTime.parse(json['completedAt'] as String)
-          : null,
-      foundItems: (json['foundItems'] as List<dynamic>?)
-              ?.map((item) => FoundItem.fromJson(item as Map<String, dynamic>))
-              .toList() ??
-          [],
-      stats: json['stats'] != null
+      id: _safeInt(json['id']),
+      configId: json['configId'] != null ? _safeInt(json['configId']) : null,
+      organizationId: _safeInt(json['organizationId']),
+      status: _safeString(json['status'], 'unknown'),
+      startedAt: _safeDateTime(json['startedAt']) ?? DateTime.now(),
+      completedAt: _safeDateTime(json['completedAt']),
+      foundItems: _safeList(json['foundItems'])
+          .map((item) =>
+              FoundItem.fromJson(item is Map<String, dynamic> ? item : {}))
+          .toList(),
+      stats: json['stats'] is Map<String, dynamic>
           ? ScanJobStats.fromJson(json['stats'] as Map<String, dynamic>)
-          : ScanJobStats(totalFiles: 0, filesWithData: 0, totalDataItems: 0, executionTime: 0),
-      error: json['error'] as String?,
-      createdAt: json['createdAt'] != null
-          ? DateTime.parse(json['createdAt'] as String)
-          : DateTime.now(),
+          : ScanJobStats(
+              totalFiles: 0,
+              filesWithData: 0,
+              totalDataItems: 0,
+              executionTime: 0),
+      error: json['error']?.toString(),
+      createdAt: _safeDateTime(json['createdAt']) ?? DateTime.now(),
     );
   }
 
@@ -65,42 +65,74 @@ class ScanJob {
   }
 }
 
+/// Backend retorna: dataType, category, subcategory, criticality, value,
+/// file, fileName, location, matches, line, cdnUrl, uploadUrl, id
 class FoundItem {
   final String type;
+  final String? category;
+  final String? subcategory;
+  final String? criticality;
   final String value;
   final String file;
+  final String? fileName;
+  final String? location;
+  final int matches;
   final int line;
   final double confidence;
   final String? cdnUrl;
+  final String? uploadUrl;
 
   FoundItem({
     required this.type,
+    this.category,
+    this.subcategory,
+    this.criticality,
     required this.value,
     required this.file,
+    this.fileName,
+    this.location,
+    this.matches = 1,
     required this.line,
     required this.confidence,
     this.cdnUrl,
+    this.uploadUrl,
   });
 
   factory FoundItem.fromJson(Map<String, dynamic> json) {
     return FoundItem(
-      type: json['type'] as String? ?? '',
-      value: json['value'] as String? ?? '',
-      file: json['file'] as String? ?? '',
-      line: json['line'] as int? ?? 0,
-      confidence: (json['confidence'] as num?)?.toDouble() ?? 0.0,
-      cdnUrl: json['cdnUrl'] as String?,
+      // Backend envia 'dataType', fallback para 'type'
+      type: _safeString(json['dataType'] ?? json['type'], ''),
+      category: json['category']?.toString(),
+      subcategory: json['subcategory']?.toString(),
+      criticality: json['criticality']?.toString(),
+      value: _safeString(json['value'], ''),
+      file: _safeString(json['file'], ''),
+      fileName: json['fileName']?.toString(),
+      location: json['location']?.toString(),
+      matches: _safeInt(json['matches'], 1),
+      line: _safeInt(json['line']),
+      confidence: _safeDouble(json['confidence']),
+      cdnUrl: json['cdnUrl']?.toString(),
+      uploadUrl: json['uploadUrl']?.toString(),
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
+      'dataType': type,
       'type': type,
+      'category': category,
+      'subcategory': subcategory,
+      'criticality': criticality,
       'value': value,
       'file': file,
+      'fileName': fileName,
+      'location': location,
+      'matches': matches,
       'line': line,
       'confidence': confidence,
       'cdnUrl': cdnUrl,
+      'uploadUrl': uploadUrl,
     };
   }
 }
@@ -128,14 +160,18 @@ class ScanJobStats {
 
   factory ScanJobStats.fromJson(Map<String, dynamic> json) {
     return ScanJobStats(
-      totalFiles: json['totalFiles'] as int? ?? 0,
-      filesWithData: json['filesWithData'] as int? ?? 0,
-      totalDataItems: json['totalDataItems'] as int? ?? 0,
-      executionTime: json['executionTime'] as int? ?? 0,
-      errors: json['errors'] as int? ?? 0,
-      clientVersion: json['clientVersion'] as String?,
-      systemInfo: json['systemInfo'] as Map<String, dynamic>?,
-      uploadResults: json['uploadResults'] as Map<String, dynamic>?,
+      totalFiles: _safeInt(json['totalFiles']),
+      filesWithData: _safeInt(json['filesWithData']),
+      totalDataItems: _safeInt(json['totalDataItems']),
+      executionTime: _safeInt(json['executionTime']),
+      errors: _safeInt(json['errors']),
+      clientVersion: json['clientVersion']?.toString(),
+      systemInfo: json['systemInfo'] is Map<String, dynamic>
+          ? json['systemInfo'] as Map<String, dynamic>
+          : null,
+      uploadResults: json['uploadResults'] is Map<String, dynamic>
+          ? json['uploadResults'] as Map<String, dynamic>
+          : null,
     );
   }
 
@@ -151,4 +187,37 @@ class ScanJobStats {
       'uploadResults': uploadResults,
     };
   }
+}
+
+// ──────── helpers seguros para parsing ────────
+
+String _safeString(dynamic v, [String fallback = '']) =>
+    v is String ? v : (v?.toString() ?? fallback);
+
+int _safeInt(dynamic v, [int fallback = 0]) {
+  if (v is int) return v;
+  if (v is num) return v.toInt();
+  if (v is String) return int.tryParse(v) ?? fallback;
+  return fallback;
+}
+
+double _safeDouble(dynamic v, [double fallback = 0.0]) {
+  if (v is double) return v;
+  if (v is num) return v.toDouble();
+  if (v is String) return double.tryParse(v) ?? fallback;
+  return fallback;
+}
+
+DateTime? _safeDateTime(dynamic v) {
+  if (v == null) return null;
+  if (v is DateTime) return v;
+  if (v is String) {
+    return DateTime.tryParse(v);
+  }
+  return null;
+}
+
+List<dynamic> _safeList(dynamic v) {
+  if (v is List<dynamic>) return v;
+  return [];
 }

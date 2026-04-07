@@ -175,7 +175,8 @@ class ScanFlowService {
   }
 
   /// Constrói configuração de scan para API a partir da config local
-  ScanConfigApi _buildScanConfigApi(ScanConfig localConfig, String decoratedName) {
+  ScanConfigApi _buildScanConfigApi(
+      ScanConfig localConfig, String decoratedName) {
     return ScanConfigApi(
       name: decoratedName,
       description: 'Scan executado via app Flutter - ${localConfig.path}',

@@ -256,23 +256,30 @@ class ApiService {
 
   // 1. Criar configuração de scan na API
   Future<ScanConfigResponse> createScanConfig(ScanConfigApi config) async {
+    late final http.Response response;
     try {
-      final response = await http.post(
+      response = await http.post(
         Uri.parse('$baseUrl$scanConfigsEndpoint'),
         headers: _getHeaders(),
         body: jsonEncode(config.toJson()),
       );
+    } catch (e) {
+      throw Exception('Erro de rede ao criar configuração: $e');
+    }
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      try {
         final data = jsonDecode(response.body) as Map<String, dynamic>;
         return ScanConfigResponse.fromJson(data);
-      } else if (response.statusCode == 401) {
-        throw Exception('Não autorizado. Faça login novamente.');
-      } else {
-        throw Exception('Erro ao criar configuração: ${response.statusCode}');
+      } catch (e) {
+        debugPrint('❌ Erro ao parsear configuração: $e');
+        debugPrint('❌ Body: ${response.body}');
+        throw Exception('Erro ao parsear resposta de configuração: $e');
       }
-    } catch (e) {
-      throw Exception('Erro de conexão: $e');
+    } else if (response.statusCode == 401) {
+      throw Exception('Não autorizado. Faça login novamente.');
+    } else {
+      throw Exception('Erro ao criar configuração: HTTP ${response.statusCode} - ${response.body}');
     }
   }
 
@@ -404,47 +411,66 @@ class ApiService {
 
   // 6. Listar jobs de scan (histórico)
   Future<List<ScanJob>> listScanJobs() async {
+    late final http.Response response;
     try {
-      final response = await http.get(
+      response = await http.get(
         Uri.parse('$baseUrl$scanJobsEndpoint'),
         headers: _getHeaders(),
       );
+    } catch (e) {
+      throw Exception('Erro de rede ao listar jobs: $e');
+    }
 
-      if (response.statusCode == 200) {
+    if (response.statusCode == 200) {
+      try {
         final data = jsonDecode(response.body) as List<dynamic>;
         return data
-            .map((item) => ScanJob.fromJson(item as Map<String, dynamic>))
+            .map((item) => ScanJob.fromJson(
+                item is Map<String, dynamic> ? item : <String, dynamic>{}))
             .toList();
-      } else if (response.statusCode == 401) {
-        throw Exception('Não autorizado. Faça login novamente.');
-      } else {
-        throw Exception('Erro ao listar jobs: ${response.statusCode}');
+      } catch (e) {
+        debugPrint('❌ Erro ao parsear lista de jobs: $e');
+        throw Exception('Erro ao parsear lista de jobs: $e');
       }
-    } catch (e) {
-      throw Exception('Erro de conexão: $e');
+    } else if (response.statusCode == 401) {
+      throw Exception('Não autorizado. Faça login novamente.');
+    } else {
+      throw Exception('Erro ao listar jobs: HTTP ${response.statusCode}');
     }
   }
 
   // 7. Buscar job específico (GET /api/data-scan-jobs/{id})
   Future<ScanJob> getScanJob(int jobId) async {
+    late final http.Response response;
     try {
-      final response = await http.get(
+      response = await http.get(
         Uri.parse('$baseUrl$scanJobsEndpoint/$jobId'),
         headers: _getHeaders(),
       );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body) as Map<String, dynamic>;
-        return ScanJob.fromJson(data);
-      } else if (response.statusCode == 401) {
-        throw Exception('Não autorizado. Faça login novamente.');
-      } else if (response.statusCode == 404) {
-        throw Exception('Job não encontrado');
-      } else {
-        throw Exception('Erro ao buscar job: ${response.statusCode}');
-      }
     } catch (e) {
-      throw Exception('Erro de conexão: $e');
+      throw Exception('Erro de rede ao buscar job $jobId: $e');
+    }
+
+    debugPrint('🌐 getScanJob($jobId): status=${response.statusCode} body=${response.body.length > 500 ? response.body.substring(0, 500) : response.body}');
+
+    if (response.statusCode == 401) {
+      throw Exception('Não autorizado. Faça login novamente.');
+    } else if (response.statusCode == 404) {
+      throw Exception('Job $jobId não encontrado');
+    } else if (response.statusCode != 200) {
+      throw Exception('Erro ao buscar job $jobId: HTTP ${response.statusCode}');
+    }
+
+    try {
+      final data = jsonDecode(response.body);
+      if (data is! Map<String, dynamic>) {
+        throw FormatException('Esperava Map, recebeu ${data.runtimeType}');
+      }
+      return ScanJob.fromJson(data);
+    } catch (e) {
+      debugPrint('❌ Erro ao parsear job $jobId: $e');
+      debugPrint('❌ Body bruto: ${response.body}');
+      throw Exception('Erro ao parsear resposta do job $jobId: $e');
     }
   }
 

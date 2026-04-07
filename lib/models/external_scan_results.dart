@@ -228,10 +228,10 @@ class ExternalScanResultsResponse {
 
   factory ExternalScanResultsResponse.fromJson(Map<String, dynamic> json) {
     return ExternalScanResultsResponse(
-      success: json['success'] as bool,
-      message: json['message'] as String,
+      success: json['success'] as bool? ?? false,
+      message: json['message']?.toString() ?? '',
       jobId: json['jobId'] as int?,
-      scanId: json['scanId'] as String?,
+      scanId: json['scanId']?.toString(),
     );
   }
 }

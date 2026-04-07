@@ -94,16 +94,24 @@ class ScanConfigResponse {
 
   factory ScanConfigResponse.fromJson(Map<String, dynamic> json) {
     return ScanConfigResponse(
-      id: json['id'] as int,
-      organizationId: json['organizationId'] as int,
-      name: json['name'] as String,
-      description: json['description'] as String,
-      sourceType: json['sourceType'] as String,
-      connectionConfig: json['connectionConfig'] as Map<String, dynamic>,
-      scanPattern: json['scanPattern'] as Map<String, dynamic>,
-      createdBy: json['createdBy'] as String,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      updatedAt: DateTime.parse(json['updatedAt'] as String),
+      id: json['id'] as int? ?? 0,
+      organizationId: json['organizationId'] as int? ?? 0,
+      name: json['name']?.toString() ?? '',
+      description: json['description']?.toString() ?? '',
+      sourceType: json['sourceType']?.toString() ?? 'directory',
+      connectionConfig: json['connectionConfig'] is Map<String, dynamic>
+          ? json['connectionConfig'] as Map<String, dynamic>
+          : {},
+      scanPattern: json['scanPattern'] is Map<String, dynamic>
+          ? json['scanPattern'] as Map<String, dynamic>
+          : {},
+      createdBy: json['createdBy']?.toString() ?? '',
+      createdAt: json['createdAt'] != null
+          ? DateTime.tryParse(json['createdAt'].toString()) ?? DateTime.now()
+          : DateTime.now(),
+      updatedAt: json['updatedAt'] != null
+          ? DateTime.tryParse(json['updatedAt'].toString()) ?? DateTime.now()
+          : DateTime.now(),
     );
   }
 }
