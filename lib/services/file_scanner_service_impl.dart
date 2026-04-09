@@ -11,6 +11,7 @@ import '../models/scan_result.dart';
 import '../models/personal_data.dart';
 import '../constants/data_patterns.dart';
 import '../validators/structured_data_validators.dart';
+import 'context_analyzer.dart';
 
 class _PreparedPattern {
   final DataPattern pattern;
@@ -245,6 +246,30 @@ class FileScannerServiceImpl {
               continue;
             }
 
+            // ── Refino por contexto ──────────────────────────────
+            // Análise semântica do conteúdo ao redor do dado
+            // detectado: o dado só é classificado se o contexto
+            // fizer sentido (ex: campo CPF).
+            final contextSignal = ContextAnalyzer.analyze(
+              patternId: pattern.id,
+              line: line,
+              matchStart: match.start,
+              matchEnd: match.end,
+            );
+
+            // Para padrões ambíguos sem validador estrutural,
+            // exige contexto positivo para evitar falso positivo.
+            if (ContextAnalyzer.isAmbiguousPattern(pattern.id) &&
+                structuredValidation == null &&
+                contextSignal.score <= 0) {
+              continue;
+            }
+
+            // Descarta qualquer match com contexto fortemente negativo.
+            if (contextSignal.score <= -0.5) {
+              continue;
+            }
+
             final startPos = (match.start - 30).clamp(0, line.length);
             final endPos = (match.end + 30).clamp(0, line.length);
             final context = line.substring(startPos, endPos);
@@ -261,6 +286,7 @@ class FileScannerServiceImpl {
                 pattern,
                 value,
                 structuredValidation: structuredValidation,
+                contextSignal: contextSignal,
               ),
               context: context,
               position: match.start,
@@ -506,22 +532,25 @@ class FileScannerServiceImpl {
     return 'medium';
   }
 
-  /// Calcula confiança da detecção
+  /// Calcula confiança da detecção combinando validação estrutural e contexto.
   double _calculateConfidence(
     DataPattern pattern,
     String value, {
     StructuredValidationResult? structuredValidation,
+    ContextSignal contextSignal = const ContextSignal(score: 0.0),
   }) {
+    // Validação estrutural tem prioridade máxima.
     if (structuredValidation?.confidenceOverride != null) {
-      return structuredValidation!.confidenceOverride!;
+      // Contexto positivo pode elevar ainda mais; negativo reduz um pouco.
+      final base = structuredValidation!.confidenceOverride!;
+      return (base + contextSignal.score * 0.02).clamp(0.0, 1.0);
     }
 
-    // Confiança base
+    // Confiança base por categoria
     double confidence = 0.7;
 
-    // Ajustar baseado no padrão
     if (pattern.category == PatternCategory.id) {
-      confidence = 0.85; // IDs tendem a ser mais confiáveis
+      confidence = 0.85;
     } else if (pattern.category == PatternCategory.contact) {
       confidence = 0.75;
     }
@@ -530,6 +559,10 @@ class FileScannerServiceImpl {
     if (value.length > 20) {
       confidence += 0.05;
     }
+
+    // ── Ajuste por contexto semântico ──────────────────────────────
+    // Contexto positivo dá boost significativo; negativo penaliza.
+    confidence += contextSignal.score * 0.15;
 
     return confidence.clamp(0.0, 1.0);
   }
