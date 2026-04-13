@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'screens/login_screen.dart';
@@ -9,8 +11,16 @@ import 'theme/app_theme.dart';
 import 'providers/auth_provider.dart';
 import 'providers/scan_provider.dart';
 import 'providers/settings_provider.dart';
+import 'services/tray_service.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // System tray apenas em desktop (Windows/Linux/macOS).
+  if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+    await TrayService.instance.init();
+  }
+
   runApp(const MainApp());
 }
 
