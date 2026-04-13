@@ -1,0 +1,416 @@
+[
+    {
+        "event":  "customer_sync",
+        "requestId":  "9700e261d8802e618133deff",
+        "customer":  {
+                         "name":  "Ana Moraes",
+                         "cpf":  "90661656934",
+                         "city":  "Sao Paulo"
+                     },
+        "noise":  {
+                      "token":  "SVW712914599556462",
+                      "hash":  "d85b238a8561a71f52b4fc6c3ce9a2bb8416acd7"
+                  }
+    },
+    {
+        "event":  "customer_sync",
+        "requestId":  "ea5d0b029864f06ab866a585",
+        "customer":  {
+                         "name":  "Fabio Vasconcelos",
+                         "cpf":  "222.788.404-52",
+                         "city":  "Maceio"
+                     },
+        "noise":  {
+                      "token":  "PQX339175385500513",
+                      "hash":  "46343d1251ab91090f77b116c4d5cfd5644e0b7c"
+                  }
+    },
+    {
+        "event":  "customer_sync",
+        "requestId":  "4899c525c8ffb553454d2857",
+        "customer":  {
+                         "name":  "Olivia Teixeira",
+                         "cpf":  "57022414289",
+                         "city":  "Porto Alegre"
+                     },
+        "noise":  {
+                      "token":  "BWC314.044.276-902310",
+                      "hash":  "28cd5bff1d91c31fd517b2d8aee09b5b942fd1a5"
+                  }
+    },
+    {
+        "event":  "customer_sync",
+        "requestId":  "cb9f18fb427cf658d87121cb",
+        "customer":  {
+                         "name":  "Sergio Novaes",
+                         "cpf":  "812.289.711-88",
+                         "city":  "Joinville"
+                     },
+        "noise":  {
+                      "token":  "XOS717980775716229",
+                      "hash":  "e28ebebf641fbfe27e128650095d1faee7d84bef"
+                  }
+    },
+    {
+        "event":  "customer_sync",
+        "requestId":  "91e0118d7d19ee7a20425ecf",
+        "customer":  {
+                         "name":  "Carla Gomes",
+                         "cpf":  "87286910833",
+                         "city":  "Belem"
+                     },
+        "noise":  {
+                      "token":  "DLK143.948.788-337641",
+                      "hash":  "dc5edd37ede8b4eeb4561ba4f79e42eda2f3c6f5"
+                  }
+    },
+    {
+        "event":  "customer_sync",
+        "requestId":  "f20f4a121f6352cf1d85b245",
+        "customer":  {
+                         "name":  "Bruno Cardoso",
+                         "cpf":  "291.644.758-08",
+                         "city":  "Curitiba"
+                     },
+        "noise":  {
+                      "token":  "PBW460030883486779",
+                      "hash":  "781ec6a59332cdae288137b24dc1371797ddf462"
+                  }
+    },
+    {
+        "event":  "customer_sync",
+        "requestId":  "f3f5f7fdf9fa9222b840dfe2",
+        "customer":  {
+                         "name":  "Hugo Pereira",
+                         "cpf":  "35848951209",
+                         "city":  "Maceio"
+                     },
+        "noise":  {
+                      "token":  "QGI325.822.116-089940",
+                      "hash":  "a68c5b51642505c04c59a3b0bed09e32df4bcf5e"
+                  }
+    },
+    {
+        "event":  "customer_sync",
+        "requestId":  "2548656b706d5880f8111346",
+        "customer":  {
+                         "name":  "Joao Oliveira",
+                         "cpf":  "929.945.293-86",
+                         "city":  "Cuiaba"
+                     },
+        "noise":  {
+                      "token":  "HTO279645964582956",
+                      "hash":  "ff09a7e802d3e0e1bf1fecbe91f141731e5661cc"
+                  }
+    },
+    {
+        "event":  "customer_sync",
+        "requestId":  "9aab05242f87d3ea92fb7aa2",
+        "customer":  {
+                         "name":  "Giovana Cardoso",
+                         "cpf":  "80251454096",
+                         "city":  "Natal"
+                     },
+        "noise":  {
+                      "token":  "OCU155974840512610",
+                      "hash":  "135fd4f748b9ef77e8925dffd88c2168469ff204"
+                  }
+    },
+    {
+        "event":  "customer_sync",
+        "requestId":  "02090e34525c2532357687b7",
+        "customer":  {
+                         "name":  "Hugo Vasconcelos",
+                         "cpf":  "138.073.743-53",
+                         "city":  "Sao Paulo"
+                     },
+        "noise":  {
+                      "token":  "ZXF470.419.392-436288",
+                      "hash":  "0b70fae8040d96930e352a9bb34c400fddbcef05"
+                  }
+    },
+    {
+        "event":  "supplier_sync",
+        "requestId":  "24751b5c624040fbbc51dd57",
+        "supplier":  {
+                         "companyName":  "Delta Holding",
+                         "cnpj":  "06440655772569",
+                         "city":  "Joinville"
+                     },
+        "noise":  {
+                      "serial":  "1abf8d6d53.361.629/8331-06cf52b4ff",
+                      "position":  "-44.19120617281347601"
+                  }
+    },
+    {
+        "event":  "supplier_sync",
+        "requestId":  "ef2ab9954b0625b934d467d2",
+        "supplier":  {
+                         "companyName":  "Kappa Holding",
+                         "cnpj":  "12.458.418/0648-76",
+                         "city":  "Goiania"
+                     },
+        "noise":  {
+                      "serial":  "7d4e7c3b25.516.700/4103-57acc36720",
+                      "position":  "-98.05115075696670269"
+                  }
+    },
+    {
+        "event":  "supplier_sync",
+        "requestId":  "92b9d3098a6a71b967e49fb8",
+        "supplier":  {
+                         "companyName":  "Lumen Tech",
+                         "cnpj":  "02443396786286",
+                         "city":  "Curitiba"
+                     },
+        "noise":  {
+                      "serial":  "d05c57466801443148892634e5b962",
+                      "position":  "-79.88125180116349898"
+                  }
+    },
+    {
+        "event":  "supplier_sync",
+        "requestId":  "28719d3b3443dfacbb999de6",
+        "supplier":  {
+                         "companyName":  "Horizonte Comercial",
+                         "cnpj":  "35.818.278/0816-43",
+                         "city":  "Belem"
+                     },
+        "noise":  {
+                      "serial":  "36fb40ff36.068.801/0263-86253a0490",
+                      "position":  "-24.60002259189669810"
+                  }
+    },
+    {
+        "event":  "supplier_sync",
+        "requestId":  "c516ebb968cdde7377d4d837",
+        "supplier":  {
+                         "companyName":  "Orion Comercial",
+                         "cnpj":  "17747818195405",
+                         "city":  "Campinas"
+                     },
+        "noise":  {
+                      "serial":  "bdce26d629.792.652/5986-746a15a419",
+                      "position":  "-36.43107666495663488"
+                  }
+    },
+    {
+        "event":  "supplier_sync",
+        "requestId":  "631131155a19dae57a43ab38",
+        "supplier":  {
+                         "companyName":  "Kappa Servicos",
+                         "cnpj":  "45.622.650/8728-05",
+                         "city":  "Sao Paulo"
+                     },
+        "noise":  {
+                      "serial":  "61676cd34537309384035792702a09",
+                      "position":  "-77.47062817704140378"
+                  }
+    },
+    {
+        "event":  "supplier_sync",
+        "requestId":  "d4eca86fd056c7ab45246749",
+        "supplier":  {
+                         "companyName":  "Nexus Comercial",
+                         "cnpj":  "88173305046995",
+                         "city":  "Fortaleza"
+                     },
+        "noise":  {
+                      "serial":  "a8eb9040970380728579964b5676f5",
+                      "position":  "-93.92274927344297563"
+                  }
+    },
+    {
+        "event":  "supplier_sync",
+        "requestId":  "a049cae712a5559c688e6fb0",
+        "supplier":  {
+                         "companyName":  "Delta Digital",
+                         "cnpj":  "92.161.400/5391-10",
+                         "city":  "Recife"
+                     },
+        "noise":  {
+                      "serial":  "94dbdb4524767842868387bfd0cb43",
+                      "position":  "-38.49432247609611026"
+                  }
+    },
+    {
+        "event":  "noise_payload",
+        "requestId":  "dc1ebd6585cf2b0b79f35b48",
+        "metrics":  {
+                        "lat":  "94.20482284901886202",
+                        "lon":  "63.94704052077370462",
+                        "series":  "JBGE45674512430570",
+                        "orgId":  "975654322909706691"
+                    }
+    },
+    {
+        "event":  "noise_payload",
+        "requestId":  "71edf9533f3e293202d20bc9",
+        "metrics":  {
+                        "lat":  "-25.98266775860208615",
+                        "lon":  "90.63334624167557099",
+                        "series":  "GDQU329.037.542-60582",
+                        "orgId":  "99.854.763/1357-698745"
+                    }
+    },
+    {
+        "event":  "noise_payload",
+        "requestId":  "24bf3fe480acf58690ce10c5",
+        "metrics":  {
+                        "lat":  "36.94183277750588350",
+                        "lon":  "-26.30059418378575452",
+                        "series":  "EXUD53977092280284",
+                        "orgId":  "119678502211301049"
+                    }
+    },
+    {
+        "event":  "noise_payload",
+        "requestId":  "29ecede99309b23d07af3e71",
+        "metrics":  {
+                        "lat":  "-22.11218640611540735",
+                        "lon":  "18.32130479300883545",
+                        "series":  "JIXG176.867.798-09024",
+                        "orgId":  "97.414.788/9328-115449"
+                    }
+    },
+    {
+        "event":  "noise_payload",
+        "requestId":  "8a43e25e8a6a1acfb0189bf8",
+        "metrics":  {
+                        "lat":  "73.14243946143322346",
+                        "lon":  "17.18356731625121134",
+                        "series":  "ACYU671.498.552-75339",
+                        "orgId":  "193605569168405094"
+                    }
+    },
+    {
+        "event":  "noise_payload",
+        "requestId":  "a90f2fa2ceda792bff59e182",
+        "metrics":  {
+                        "lat":  "-75.87322370064983830",
+                        "lon":  "-91.72218068130502566",
+                        "series":  "QLPO081.464.832-76144",
+                        "orgId":  "799113724595914670"
+                    }
+    },
+    {
+        "event":  "noise_payload",
+        "requestId":  "3791e5ed69c47de4634fe571",
+        "metrics":  {
+                        "lat":  "13.72532862590670619",
+                        "lon":  "22.24017555756742349",
+                        "series":  "XKOW943.675.658-57865",
+                        "orgId":  "52.798.875/8525-967233"
+                    }
+    },
+    {
+        "event":  "noise_payload",
+        "requestId":  "f515258599783bfc2b176b08",
+        "metrics":  {
+                        "lat":  "-64.73090089089234860",
+                        "lon":  "44.71634242315248554",
+                        "series":  "OCIF25582624754816",
+                        "orgId":  "71.999.703/8159-936964"
+                    }
+    },
+    {
+        "event":  "noise_payload",
+        "requestId":  "96f7bf0aee01e7ece5c474a4",
+        "metrics":  {
+                        "lat":  "52.38440832672932679",
+                        "lon":  "-16.18121079432572828",
+                        "series":  "QJFI76184550484237",
+                        "orgId":  "739290115534127860"
+                    }
+    },
+    {
+        "event":  "noise_payload",
+        "requestId":  "c949e6cb45ab18e7418715a4",
+        "metrics":  {
+                        "lat":  "-22.01108332226541323",
+                        "lon":  "21.33529644006988048",
+                        "series":  "TXRM905.727.989-34874",
+                        "orgId":  "824535231961726864"
+                    }
+    },
+    {
+        "event":  "noise_payload",
+        "requestId":  "104208539fd0d20a040a8c13",
+        "metrics":  {
+                        "lat":  "81.63271015337019250",
+                        "lon":  "15.43919471499515551",
+                        "series":  "GLDH904.635.058-27386",
+                        "orgId":  "580877386448270066"
+                    }
+    },
+    {
+        "event":  "noise_payload",
+        "requestId":  "a5e378c8bf427987f9720a8b",
+        "metrics":  {
+                        "lat":  "-80.84359818841296801",
+                        "lon":  "-92.99051742309608871",
+                        "series":  "HBZZ824.022.598-42435",
+                        "orgId":  "66.665.054/8251-258899"
+                    }
+    },
+    {
+        "event":  "noise_payload",
+        "requestId":  "88c8319eebcf4eee59564ecf",
+        "metrics":  {
+                        "lat":  "53.44098997502471254",
+                        "lon":  "74.25078725283644974",
+                        "series":  "FPPQ78070609713616",
+                        "orgId":  "949372500792152015"
+                    }
+    },
+    {
+        "event":  "noise_payload",
+        "requestId":  "58f6a3a7887bd022f463d464",
+        "metrics":  {
+                        "lat":  "-45.05710490974841491",
+                        "lon":  "32.97748288295833293",
+                        "series":  "EXJB17214530537583",
+                        "orgId":  "32.190.335/6582-117180"
+                    }
+    },
+    {
+        "event":  "noise_payload",
+        "requestId":  "70160018760af30cb00d77cc",
+        "metrics":  {
+                        "lat":  "29.20064432640335528",
+                        "lon":  "-52.52154637545134552",
+                        "series":  "CXGY231.904.090-79223",
+                        "orgId":  "754477801445609998"
+                    }
+    },
+    {
+        "event":  "noise_payload",
+        "requestId":  "32c21fe293a9789ce3c71a42",
+        "metrics":  {
+                        "lat":  "-25.39197433598442155",
+                        "lon":  "63.17629512558377249",
+                        "series":  "IZYO86718941829676",
+                        "orgId":  "964097777013518135"
+                    }
+    },
+    {
+        "event":  "noise_payload",
+        "requestId":  "01905b8bfecdbbe51ed11453",
+        "metrics":  {
+                        "lat":  "42.18166828338448838",
+                        "lon":  "34.32070009901646044",
+                        "series":  "GZSS73946801694861",
+                        "orgId":  "79.656.932/2218-055283"
+                    }
+    },
+    {
+        "event":  "noise_payload",
+        "requestId":  "a86a16f8ea3be617936da1a0",
+        "metrics":  {
+                        "lat":  "-13.34417653269738448",
+                        "lon":  "-34.72906975381885452",
+                        "series":  "BAWO94269782185420",
+                        "orgId":  "748418546271603553"
+                    }
+    }
+]

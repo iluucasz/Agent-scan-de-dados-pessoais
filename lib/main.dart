@@ -80,8 +80,7 @@ class MainApp extends StatelessWidget {
               '/scan-results': (context) => const ScanResultsScreen(),
               '/scan-history': (context) =>
                   const DashboardLayout(initialIndex: 2),
-              '/schedule': (context) =>
-                  const DashboardLayout(initialIndex: 4),
+              '/schedule': (context) => const DashboardLayout(initialIndex: 4),
               '/settings': (context) => const DashboardLayout(initialIndex: 5),
             },
           );

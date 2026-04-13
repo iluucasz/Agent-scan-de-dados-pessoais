@@ -23,8 +23,11 @@ class SchedulerService {
   Timer? _ticker;
   bool _running = false;
 
-  /// Callback opcional para notificar a UI quando um scan agendado finaliza.
+  /// Callback opcional para notificar a UI quando um agendamento é atualizado.
   VoidCallback? onScheduleUpdated;
+
+  /// Callback quando um scan agendado é concluído com sucesso.
+  VoidCallback? onScanCompleted;
 
   List<ScanSchedule> get schedules => List.unmodifiable(_schedules);
 
@@ -65,9 +68,8 @@ class SchedulerService {
     final idx = _schedules.indexWhere((s) => s.id == schedule.id);
     if (idx == -1) return;
     final withNext = schedule.copyWith(
-      nextRunAt: schedule.enabled
-          ? schedule.computeNextRun(DateTime.now())
-          : null,
+      nextRunAt:
+          schedule.enabled ? schedule.computeNextRun(DateTime.now()) : null,
     );
     _schedules[idx] = withNext;
     await _persist();
@@ -157,5 +159,6 @@ class SchedulerService {
     await DatabaseService.instance.saveScanResult(result);
     debugPrint(
         '✅ Scan agendado "${schedule.name}" concluído: ${result.totalDataFound} itens');
+    onScanCompleted?.call();
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/scan_provider.dart';
+import '../services/scheduler_service.dart';
 import '../theme/app_colors.dart';
 import 'home_screen.dart';
 import 'scan_config_screen.dart';
@@ -40,6 +41,31 @@ class _DashboardLayoutState extends State<DashboardLayout> {
   void initState() {
     super.initState();
     _selectedIndex = widget.initialIndex.clamp(0, _screens.length - 1);
+
+    // Quando um scan agendado terminar, atualiza o histórico do ScanProvider.
+    SchedulerService.instance.onScanCompleted = () {
+      if (!mounted) return;
+      context.read<ScanProvider>().refreshHistory();
+      _showScheduledScanSnackBar();
+    };
+  }
+
+  void _showScheduledScanSnackBar() {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Row(
+          children: [
+            Icon(Icons.check_circle, color: Colors.white, size: 20),
+            SizedBox(width: 12),
+            Text('Scan agendado concluído! Resultados salvos no histórico.'),
+          ],
+        ),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: AppColors.success600,
+        duration: const Duration(seconds: 4),
+      ),
+    );
   }
 
   final List<_NavItem> _navItems = [

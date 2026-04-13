@@ -459,8 +459,7 @@ class _ScheduleEditorDialogState extends State<_ScheduleEditorDialog> {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide:
-                              BorderSide(color: cs.primary, width: 1.5),
+                          borderSide: BorderSide(color: cs.primary, width: 1.5),
                         ),
                         prefixIcon: const Icon(Icons.label_outline),
                       ),
@@ -492,8 +491,7 @@ class _ScheduleEditorDialogState extends State<_ScheduleEditorDialog> {
                                 children: [
                                   Text(
                                     'Diretório',
-                                    style:
-                                        theme.textTheme.labelSmall?.copyWith(
+                                    style: theme.textTheme.labelSmall?.copyWith(
                                       color: AppColors.gray500,
                                       fontSize: 11,
                                     ),
@@ -533,15 +531,13 @@ class _ScheduleEditorDialogState extends State<_ScheduleEditorDialog> {
                         return Expanded(
                           child: Padding(
                             padding: EdgeInsets.only(
-                              right:
-                                  f != ScheduleFrequency.custom ? 8.0 : 0.0,
+                              right: f != ScheduleFrequency.custom ? 8.0 : 0.0,
                             ),
                             child: _FrequencyCard(
                               icon: _frequencyIcon(f),
                               label: _frequencyName(f),
                               selected: selected,
-                              onTap: () =>
-                                  setState(() => _frequency = f),
+                              onTap: () => setState(() => _frequency = f),
                               cs: cs,
                             ),
                           ),
@@ -608,8 +604,7 @@ class _ScheduleEditorDialogState extends State<_ScheduleEditorDialog> {
                             value: _includeSubfolders,
                             onChanged: (v) =>
                                 setState(() => _includeSubfolders = v),
-                            secondary:
-                                const Icon(Icons.account_tree_outlined),
+                            secondary: const Icon(Icons.account_tree_outlined),
                             shape: const RoundedRectangleBorder(
                               borderRadius: BorderRadius.vertical(
                                   top: Radius.circular(12)),
@@ -618,8 +613,7 @@ class _ScheduleEditorDialogState extends State<_ScheduleEditorDialog> {
                           const Divider(height: 1, indent: 16, endIndent: 16),
                           // Tamanho máximo
                           ListTile(
-                            leading:
-                                const Icon(Icons.straighten_outlined),
+                            leading: const Icon(Icons.straighten_outlined),
                             title: const Text('Tamanho máximo por arquivo'),
                             subtitle: Text(
                               '$_maxFileSizeMb MB',
@@ -690,10 +684,9 @@ class _ScheduleEditorDialogState extends State<_ScheduleEditorDialog> {
                               style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600,
-                                color:
-                                    _selectedPatterns.length == totalPatterns
-                                        ? AppColors.success700
-                                        : cs.primary,
+                                color: _selectedPatterns.length == totalPatterns
+                                    ? AppColors.success700
+                                    : cs.primary,
                               ),
                             ),
                           ),
@@ -818,9 +811,10 @@ class _ScheduleEditorDialogState extends State<_ScheduleEditorDialog> {
         children: [
           Icon(Icons.access_time_rounded, color: cs.primary, size: 22),
           const SizedBox(width: 14),
-          Text('Horário:', style: theme.textTheme.bodyMedium?.copyWith(
-            fontWeight: FontWeight.w500,
-          )),
+          Text('Horário:',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.w500,
+              )),
           const Spacer(),
           // Hora
           _timeSpinner(
@@ -831,11 +825,12 @@ class _ScheduleEditorDialogState extends State<_ScheduleEditorDialog> {
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 6),
-            child: Text(':', style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              color: cs.primary,
-            )),
+            child: Text(':',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: cs.primary,
+                )),
           ),
           // Minuto
           _timeSpinner(
@@ -932,17 +927,13 @@ class _ScheduleEditorDialogState extends State<_ScheduleEditorDialog> {
                 onTap: () => setState(() => _customMinutes = m),
                 borderRadius: BorderRadius.circular(10),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 14, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                   decoration: BoxDecoration(
-                    color: selected
-                        ? cs.primary
-                        : Colors.white,
+                    color: selected ? cs.primary : Colors.white,
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(
-                      color: selected
-                          ? cs.primary
-                          : AppColors.gray200,
+                      color: selected ? cs.primary : AppColors.gray200,
                     ),
                   ),
                   child: Text(
@@ -990,9 +981,7 @@ class _ScheduleEditorDialogState extends State<_ScheduleEditorDialog> {
               height: 40,
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: selected
-                    ? cs.primary
-                    : AppColors.gray50,
+                color: selected ? cs.primary : AppColors.gray50,
                 shape: BoxShape.circle,
                 border: Border.all(
                   color: selected ? cs.primary : AppColors.gray300,
@@ -1032,16 +1021,15 @@ class _ScheduleEditorDialogState extends State<_ScheduleEditorDialog> {
                 },
                 icon: const Icon(Icons.select_all, size: 16),
                 label: const Text('Todos'),
-                style: TextButton.styleFrom(
-                    visualDensity: VisualDensity.compact),
+                style:
+                    TextButton.styleFrom(visualDensity: VisualDensity.compact),
               ),
               TextButton.icon(
-                onPressed: () =>
-                    setState(() => _selectedPatterns.clear()),
+                onPressed: () => setState(() => _selectedPatterns.clear()),
                 icon: const Icon(Icons.deselect, size: 16),
                 label: const Text('Nenhum'),
-                style: TextButton.styleFrom(
-                    visualDensity: VisualDensity.compact),
+                style:
+                    TextButton.styleFrom(visualDensity: VisualDensity.compact),
               ),
             ],
           ),
@@ -1049,12 +1037,10 @@ class _ScheduleEditorDialogState extends State<_ScheduleEditorDialog> {
           Wrap(
             spacing: 6,
             runSpacing: 6,
-            children:
-                DataPatterns.allPatterns.where((p) => p.enabled).map((p) {
+            children: DataPatterns.allPatterns.where((p) => p.enabled).map((p) {
               final selected = _selectedPatterns.contains(p.name);
               return FilterChip(
-                label:
-                    Text(p.name, style: const TextStyle(fontSize: 12)),
+                label: Text(p.name, style: const TextStyle(fontSize: 12)),
                 selected: selected,
                 onSelected: (v) {
                   setState(() {
@@ -1180,7 +1166,7 @@ class _ScheduleEditorDialogState extends State<_ScheduleEditorDialog> {
 
   Future<void> _pickDirectory() async {
     final result = await FilePicker.platform.getDirectoryPath();
-    if (result != null) {
+    if (result != null && mounted) {
       setState(() => _path = result);
     }
   }
@@ -1260,9 +1246,8 @@ class _FrequencyCard extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: BoxDecoration(
-          color: selected
-              ? cs.primary.withValues(alpha: 0.1)
-              : AppColors.gray50,
+          color:
+              selected ? cs.primary.withValues(alpha: 0.1) : AppColors.gray50,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: selected ? cs.primary : AppColors.gray200,
@@ -1272,8 +1257,7 @@ class _FrequencyCard extends StatelessWidget {
         child: Column(
           children: [
             Icon(icon,
-                size: 22,
-                color: selected ? cs.primary : AppColors.gray400),
+                size: 22, color: selected ? cs.primary : AppColors.gray400),
             const SizedBox(height: 6),
             Text(
               label,

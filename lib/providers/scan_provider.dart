@@ -110,6 +110,10 @@ class ScanProvider with ChangeNotifier {
     });
   }
 
+  /// Recarrega o histórico a partir do banco de dados.
+  /// Usado para atualizar a UI após scans agendados.
+  Future<void> refreshHistory() => _loadHistoryFromDatabase();
+
   // Carregar histórico do banco de dados
   Future<void> _loadHistoryFromDatabase() async {
     try {

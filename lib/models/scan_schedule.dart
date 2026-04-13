@@ -132,10 +132,9 @@ class ScanSchedule {
       customIntervalMinutes: json['customIntervalMinutes'] as int? ?? 60,
       hour: json['hour'] as int? ?? 8,
       minute: json['minute'] as int? ?? 0,
-      weekdays: (json['weekdays'] as List<dynamic>?)
-              ?.map((e) => e as int)
-              .toList() ??
-          const [1, 2, 3, 4, 5],
+      weekdays:
+          (json['weekdays'] as List<dynamic>?)?.map((e) => e as int).toList() ??
+              const [1, 2, 3, 4, 5],
       dayOfMonth: json['dayOfMonth'] as int? ?? 1,
       enabled: json['enabled'] as bool? ?? true,
       createdAt: DateTime.parse(json['createdAt'] as String),
@@ -182,8 +181,8 @@ class ScanSchedule {
         var next = DateTime(from.year, from.month, dayOfMonth, hour, minute);
         if (next.isBefore(from) || next.isAtSameMomentAs(from)) {
           final m = from.month + 1;
-          next = DateTime(
-              from.year + (m > 12 ? 1 : 0), (m - 1) % 12 + 1, dayOfMonth, hour, minute);
+          next = DateTime(from.year + (m > 12 ? 1 : 0), (m - 1) % 12 + 1,
+              dayOfMonth, hour, minute);
         }
         return next;
 

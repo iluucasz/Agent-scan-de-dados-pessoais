@@ -36,8 +36,8 @@ class TrayService with TrayListener, WindowListener {
     await windowManager.setPreventClose(true);
 
     // ── Tray Icon ─────────────────────────────────────────────────
-    final exeDir = Platform.resolvedExecutable
-        .replaceAll(RegExp(r'[^\\\/]+$'), '');
+    final exeDir =
+        Platform.resolvedExecutable.replaceAll(RegExp(r'[^\\\/]+$'), '');
     final iconFile = Platform.isWindows ? 'app_icon.ico' : 'pv-pulse.png';
     final iconPath = '${exeDir}data\\flutter_assets\\assets\\icons\\$iconFile';
 
