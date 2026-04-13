@@ -10,6 +10,7 @@ import 'screens/scan_results_screen.dart';
 import 'theme/app_theme.dart';
 import 'providers/auth_provider.dart';
 import 'providers/scan_provider.dart';
+import 'providers/schedule_provider.dart';
 import 'providers/settings_provider.dart';
 import 'services/tray_service.dart';
 
@@ -34,6 +35,7 @@ class MainApp extends StatelessWidget {
         ChangeNotifierProvider(
             create: (_) => AuthProvider()..checkStoredAuth()),
         ChangeNotifierProvider(create: (_) => ScanProvider()..initialize()),
+        ChangeNotifierProvider(create: (_) => ScheduleProvider()..initialize()),
         ChangeNotifierProvider(create: (_) => SettingsProvider()..initialize()),
       ],
       child: Consumer<SettingsProvider>(
@@ -78,7 +80,9 @@ class MainApp extends StatelessWidget {
               '/scan-results': (context) => const ScanResultsScreen(),
               '/scan-history': (context) =>
                   const DashboardLayout(initialIndex: 2),
-              '/settings': (context) => const DashboardLayout(initialIndex: 4),
+              '/schedule': (context) =>
+                  const DashboardLayout(initialIndex: 4),
+              '/settings': (context) => const DashboardLayout(initialIndex: 5),
             },
           );
         },

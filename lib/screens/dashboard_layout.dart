@@ -6,6 +6,7 @@ import '../theme/app_colors.dart';
 import 'home_screen.dart';
 import 'scan_config_screen.dart';
 import 'scan_history_screen.dart';
+import 'schedule_screen.dart';
 import 'settings_screen.dart';
 import 'patterns_list_screen.dart';
 
@@ -29,6 +30,7 @@ class _DashboardLayoutState extends State<DashboardLayout> {
     const ScanConfigScreen(),
     const ScanHistoryScreen(),
     const PatternsListScreen(),
+    const ScheduleScreen(),
     const SettingsScreen(),
   ];
 
@@ -60,6 +62,11 @@ class _DashboardLayoutState extends State<DashboardLayout> {
       icon: Icons.list_alt,
       label: 'Padrões de Dados',
       route: '/patterns',
+    ),
+    _NavItem(
+      icon: Icons.schedule,
+      label: 'Agendamento',
+      route: '/schedule',
     ),
     _NavItem(
       icon: Icons.settings,
