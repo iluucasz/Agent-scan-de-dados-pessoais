@@ -12,6 +12,7 @@ import '../services/scan_flow_service.dart';
 import '../constants/data_patterns.dart';
 import '../models/area.dart';
 import '../models/processo.dart';
+import '../models/scan_preset.dart';
 
 class ScanConfigScreen extends StatefulWidget {
   const ScanConfigScreen({super.key});
@@ -29,6 +30,7 @@ class _ScanConfigScreenState extends State<ScanConfigScreen> {
   int _maxFileSizeMb = 10;
   final _scanNameController = TextEditingController();
   bool _isEditingScanName = false;
+  String _selectedPresetId = 'quick';
 
   @override
   void initState() {
@@ -45,12 +47,8 @@ class _ScanConfigScreenState extends State<ScanConfigScreen> {
         ? globalMaxFileSize
         : 100;
 
-    // Selecionar alguns padrões comuns por padrão
-    _selectedPatterns.addAll([
-      DataPatterns.cpf.name,
-      DataPatterns.email.name,
-      DataPatterns.telefone.name,
-    ]);
+    // Aplicar preset padrão (Rápido)
+    _applyPreset(ScanPresets.quick);
 
     // Nome padrão do escaneamento (caso o usuário não defina manualmente)
     if (_scanNameController.text.trim().isEmpty) {
@@ -98,6 +96,19 @@ class _ScanConfigScreenState extends State<ScanConfigScreen> {
     return 'Escaneamento da Área ${area.name} e Processo ${processo.name} $date';
   }
 
+  void _applyPreset(ScanPreset preset) {
+    setState(() {
+      _selectedPresetId = preset.id;
+      if (preset.id != 'custom') {
+        _selectedPatterns
+          ..clear()
+          ..addAll(preset.patternNames);
+        _includeSubfolders = preset.includeSubfolders;
+        _maxFileSizeMb = preset.maxFileSizeMb;
+      }
+    });
+  }
+
   Future<void> _openAreaProcessSelector() async {
     final authProvider = context.read<AuthProvider>();
     final apiService = ApiService();
@@ -123,6 +134,7 @@ class _ScanConfigScreenState extends State<ScanConfigScreen> {
 
   void _togglePattern(String patternName) {
     setState(() {
+      _selectedPresetId = 'custom';
       if (_selectedPatterns.contains(patternName)) {
         _selectedPatterns.remove(patternName);
       } else {
@@ -133,6 +145,7 @@ class _ScanConfigScreenState extends State<ScanConfigScreen> {
 
   void _selectAllPatterns() {
     setState(() {
+      _selectedPresetId = 'custom';
       _selectedPatterns.addAll(
         DataPatterns.allPatterns.map((p) => p.name),
       );
@@ -141,12 +154,14 @@ class _ScanConfigScreenState extends State<ScanConfigScreen> {
 
   void _clearAllPatterns() {
     setState(() {
+      _selectedPresetId = 'custom';
       _selectedPatterns.clear();
     });
   }
 
   void _selectCategoryPatterns(PatternCategory category) {
     setState(() {
+      _selectedPresetId = 'custom';
       final categoryPatterns = DataPatterns.getByCategory(category);
       _selectedPatterns.addAll(categoryPatterns.map((p) => p.name));
     });
@@ -256,6 +271,151 @@ class _ScanConfigScreenState extends State<ScanConfigScreen> {
                 ],
               ),
               const SizedBox(height: 32),
+
+              // ── Preset selector ───────────────────────────────
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppColors.gray200, width: 1.5),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.05),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary100,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(
+                            Icons.speed,
+                            size: 24,
+                            color: AppColors.primary600,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        const Text(
+                          'Modo de Escaneamento',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.gray900,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Escolha um preset ou configure manualmente',
+                      style: TextStyle(fontSize: 13, color: AppColors.gray600),
+                    ),
+                    const SizedBox(height: 20),
+                    Row(
+                      children: ScanPresets.all.map((preset) {
+                        final isSelected = _selectedPresetId == preset.id;
+                        return Expanded(
+                          child: Padding(
+                            padding: EdgeInsets.only(
+                              right: preset.id != ScanPresets.all.last.id
+                                  ? 12
+                                  : 0,
+                            ),
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () => _applyPreset(preset),
+                                borderRadius: BorderRadius.circular(12),
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 200),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 20,
+                                    horizontal: 16,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    gradient: isSelected
+                                        ? const LinearGradient(
+                                            colors: [
+                                              AppColors.primary600,
+                                              AppColors.primary700,
+                                            ],
+                                            begin: Alignment.topLeft,
+                                            end: Alignment.bottomRight,
+                                          )
+                                        : null,
+                                    color: isSelected ? null : AppColors.gray50,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: isSelected
+                                          ? AppColors.primary600
+                                          : AppColors.gray200,
+                                      width: isSelected ? 2 : 1.5,
+                                    ),
+                                    boxShadow: isSelected
+                                        ? [
+                                            BoxShadow(
+                                              color: AppColors.primary600
+                                                  .withValues(alpha: 0.25),
+                                              blurRadius: 8,
+                                              offset: const Offset(0, 4),
+                                            ),
+                                          ]
+                                        : null,
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      Icon(
+                                        preset.icon,
+                                        size: 28,
+                                        color: isSelected
+                                            ? Colors.white
+                                            : AppColors.gray600,
+                                      ),
+                                      const SizedBox(height: 10),
+                                      Text(
+                                        preset.name,
+                                        style: TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.bold,
+                                          color: isSelected
+                                              ? Colors.white
+                                              : AppColors.gray800,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        preset.description,
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: isSelected
+                                              ? Colors.white70
+                                              : AppColors.gray500,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
 
               // Grid Layout - 2 columns
               Row(
