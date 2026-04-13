@@ -1,2 +1,0 @@
-ALTER TABLE "data_items" ADD COLUMN "user_uuid" uuid NOT NULL;--> statement-breakpoint
-ALTER TABLE "data_items" ADD CONSTRAINT "data_items_user_uuid_users_id_fk" FOREIGN KEY ("user_uuid") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;

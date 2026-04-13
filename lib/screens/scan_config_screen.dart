@@ -327,9 +327,8 @@ class _ScanConfigScreenState extends State<ScanConfigScreen> {
                         return Expanded(
                           child: Padding(
                             padding: EdgeInsets.only(
-                              right: preset.id != ScanPresets.all.last.id
-                                  ? 12
-                                  : 0,
+                              right:
+                                  preset.id != ScanPresets.all.last.id ? 12 : 0,
                             ),
                             child: Material(
                               color: Colors.transparent,

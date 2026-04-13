@@ -40,10 +40,10 @@ class User {
       id: json['id'].toString(),
       organizationId: json['organizationId'] as int? ??
           json['organization_id'] as int? ??
-          0,
+          1,
       currentOrganizationId: json['currentOrganizationId'] as int? ??
           json['current_organization_id'] as int? ??
-          0,
+          1,
       name: json['name'] as String? ?? '',
       email: json['email'] as String? ?? '',
       role: json['role'] as String? ?? 'user',

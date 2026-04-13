@@ -192,7 +192,8 @@ CNPJ invalido: 04.252.011/0001-11
 
       final file =
           File('${tempDirectory.path}${Platform.pathSeparator}dados.txt');
-      await file.writeAsString('user@example.com\nEmail corporativo: admin@empresa.com.br\n');
+      await file.writeAsString(
+          'user@example.com\nEmail corporativo: admin@empresa.com.br\n');
 
       final scanner = FileScannerServiceImpl();
       final result = await scanner.scan(
@@ -211,8 +212,8 @@ CNPJ invalido: 04.252.011/0001-11
 
       final withoutLabel =
           result.foundData.firstWhere((d) => d.value == 'user@example.com');
-      final withLabel = result.foundData
-          .firstWhere((d) => d.value == 'admin@empresa.com.br');
+      final withLabel =
+          result.foundData.firstWhere((d) => d.value == 'admin@empresa.com.br');
 
       // O match com label "Email" deve ter confiança maior.
       expect(withLabel.confidence, greaterThan(withoutLabel.confidence));

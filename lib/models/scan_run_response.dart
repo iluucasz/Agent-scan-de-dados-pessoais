@@ -89,15 +89,13 @@ class UploadStats {
 
   factory UploadStats.fromJson(Map<String, dynamic> json) {
     return UploadStats(
-      totalFiles: json['totalFiles'] as int? ??
-          json['totalAttempted'] as int? ??
-          0,
+      totalFiles:
+          json['totalFiles'] as int? ?? json['totalAttempted'] as int? ?? 0,
       uploadedSuccessfully: json['uploadedSuccessfully'] as int? ??
           json['successfulUploads'] as int? ??
           0,
-      totalSizeBytes: json['totalSizeBytes'] as int? ??
-          json['totalBytes'] as int? ??
-          0,
+      totalSizeBytes:
+          json['totalSizeBytes'] as int? ?? json['totalBytes'] as int? ?? 0,
     );
   }
 }

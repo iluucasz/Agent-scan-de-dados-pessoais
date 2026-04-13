@@ -28,8 +28,7 @@ abstract final class ContextAnalyzer {
     // Janela de contexto: 80 chars antes e 40 depois do match.
     final contextStart = (matchStart - 80).clamp(0, line.length);
     final contextEnd = (matchEnd + 40).clamp(0, line.length);
-    final contextText =
-        line.substring(contextStart, contextEnd).toLowerCase();
+    final contextText = line.substring(contextStart, contextEnd).toLowerCase();
 
     final positiveKeywords = _positiveContext[patternId];
     final negativeKeywords = _negativeContext[patternId];

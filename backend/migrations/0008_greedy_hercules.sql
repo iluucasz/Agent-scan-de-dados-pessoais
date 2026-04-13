@@ -1,1 +1,0 @@
-ALTER TYPE "public"."auth_token_purpose" ADD VALUE 'LOGIN_OTP';

@@ -279,7 +279,8 @@ class ApiService {
     } else if (response.statusCode == 401) {
       throw Exception('Não autorizado. Faça login novamente.');
     } else {
-      throw Exception('Erro ao criar configuração: HTTP ${response.statusCode} - ${response.body}');
+      throw Exception(
+          'Erro ao criar configuração: HTTP ${response.statusCode} - ${response.body}');
     }
   }
 
@@ -451,7 +452,8 @@ class ApiService {
       throw Exception('Erro de rede ao buscar job $jobId: $e');
     }
 
-    debugPrint('🌐 getScanJob($jobId): status=${response.statusCode} body=${response.body.length > 500 ? response.body.substring(0, 500) : response.body}');
+    debugPrint(
+        '🌐 getScanJob($jobId): status=${response.statusCode} body=${response.body.length > 500 ? response.body.substring(0, 500) : response.body}');
 
     if (response.statusCode == 401) {
       throw Exception('Não autorizado. Faça login novamente.');
