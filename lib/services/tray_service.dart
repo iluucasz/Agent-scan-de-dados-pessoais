@@ -36,10 +36,10 @@ class TrayService with TrayListener, WindowListener {
     await windowManager.setPreventClose(true);
 
     // ── Tray Icon ─────────────────────────────────────────────────
-    final iconPath = Platform.resolvedExecutable
-        .replaceAll(RegExp(r'[^\\\/]+$'), '')
-        .replaceAll(r'\', '/')
-        + 'data/flutter_assets/assets/icons/pv-pulse.png';
+    final exeDir = Platform.resolvedExecutable
+        .replaceAll(RegExp(r'[^\\\/]+$'), '');
+    final iconFile = Platform.isWindows ? 'app_icon.ico' : 'pv-pulse.png';
+    final iconPath = '${exeDir}data\\flutter_assets\\assets\\icons\\$iconFile';
 
     await trayManager.setIcon(iconPath);
     await trayManager.setToolTip('SeusDADOS');
