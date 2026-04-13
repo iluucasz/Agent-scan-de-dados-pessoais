@@ -13,13 +13,15 @@ import 'providers/scan_provider.dart';
 import 'providers/schedule_provider.dart';
 import 'providers/settings_provider.dart';
 import 'services/tray_service.dart';
+import 'services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // System tray apenas em desktop (Windows/Linux/macOS).
+  // System tray e notificações apenas em desktop (Windows/Linux/macOS).
   if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
     await TrayService.instance.init();
+    await NotificationService.instance.init();
   }
 
   runApp(const MainApp());

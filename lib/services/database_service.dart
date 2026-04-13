@@ -218,6 +218,108 @@ class DatabaseService {
     await db.delete('scan_results');
   }
 
+  /// Retorna o total de scans (com filtro opcional).
+  Future<int> getScanCount({String? pathFilter, bool? hasFindings}) async {
+    final db = await database;
+    final where = <String>[];
+    final args = <dynamic>[];
+
+    if (pathFilter != null && pathFilter.isNotEmpty) {
+      where.add('scanned_path LIKE ?');
+      args.add('%$pathFilter%');
+    }
+    if (hasFindings == true) {
+      where.add('total_data_found > 0');
+    } else if (hasFindings == false) {
+      where.add('total_data_found = 0');
+    }
+
+    final whereClause = where.isNotEmpty ? where.join(' AND ') : null;
+    final result = await db.query(
+      'scan_results',
+      columns: ['COUNT(*) as cnt'],
+      where: whereClause,
+      whereArgs: args.isNotEmpty ? args : null,
+    );
+    return (result.first['cnt'] as int?) ?? 0;
+  }
+
+  /// Busca paginada de resultados (mais recentes primeiro).
+  Future<List<ScanResult>> getScanResultsPaged({
+    required int offset,
+    required int limit,
+    String? pathFilter,
+    bool? hasFindings,
+    String orderBy = 'scan_date DESC',
+  }) async {
+    final db = await database;
+    final where = <String>[];
+    final args = <dynamic>[];
+
+    if (pathFilter != null && pathFilter.isNotEmpty) {
+      where.add('scanned_path LIKE ?');
+      args.add('%$pathFilter%');
+    }
+    if (hasFindings == true) {
+      where.add('total_data_found > 0');
+    } else if (hasFindings == false) {
+      where.add('total_data_found = 0');
+    }
+
+    final whereClause = where.isNotEmpty ? where.join(' AND ') : null;
+
+    final results = await db.query(
+      'scan_results',
+      where: whereClause,
+      whereArgs: args.isNotEmpty ? args : null,
+      orderBy: orderBy,
+      limit: limit,
+      offset: offset,
+    );
+
+    final scanResults = <ScanResult>[];
+
+    for (final row in results) {
+      final scanId = row['id'] as int;
+
+      final dataRows = await db.query(
+        'personal_data',
+        where: 'scan_result_id = ?',
+        whereArgs: [scanId],
+      );
+
+      final foundData = dataRows.map((dataRow) {
+        return PersonalData(
+          dataType: dataRow['data_type'] as String,
+          value: dataRow['value'] as String,
+          filePath: dataRow['file_path'] as String,
+          lineNumber: dataRow['line_number'] as int,
+          confidence: dataRow['confidence'] as double,
+        );
+      }).toList();
+
+      scanResults.add(ScanResult(
+        foundData: foundData,
+        totalFilesScanned: row['total_files_scanned'] as int,
+        totalDataFound: row['total_data_found'] as int,
+        scanDate: DateTime.parse(row['scan_date'] as String),
+        scanDuration: Duration(seconds: row['scan_duration'] as int),
+        scannedPath: row['scanned_path'] as String,
+      ));
+    }
+
+    return scanResults;
+  }
+
+  /// Lista de caminhos únicos escaneados (para filtros).
+  Future<List<String>> getDistinctPaths() async {
+    final db = await database;
+    final rows = await db.rawQuery(
+      'SELECT DISTINCT scanned_path FROM scan_results ORDER BY scanned_path',
+    );
+    return rows.map((r) => r['scanned_path'] as String).toList();
+  }
+
   // Estatísticas gerais
   Future<Map<String, int>> getStatistics() async {
     final db = await database;

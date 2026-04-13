@@ -8,6 +8,7 @@ import '../models/scan_config.dart';
 import '../models/scan_schedule.dart';
 import '../services/file_scanner_service_impl.dart';
 import '../services/database_service.dart';
+import '../services/notification_service.dart';
 
 /// Serviço singleton que gerencia o agendamento de scans em background.
 ///
@@ -159,6 +160,13 @@ class SchedulerService {
     await DatabaseService.instance.saveScanResult(result);
     debugPrint(
         '✅ Scan agendado "${schedule.name}" concluído: ${result.totalDataFound} itens');
+
+    // Notificação nativa do Windows
+    await NotificationService.instance.show(
+      title: 'Scan concluído — ${schedule.name}',
+      body: '${result.totalDataFound} dados pessoais em ${result.totalFilesScanned} arquivos',
+    );
+
     onScanCompleted?.call();
   }
 }
