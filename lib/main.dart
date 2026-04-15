@@ -14,6 +14,8 @@ import 'providers/schedule_provider.dart';
 import 'providers/settings_provider.dart';
 import 'services/tray_service.dart';
 import 'services/notification_service.dart';
+import 'services/logging_service.dart';
+import 'models/log_entry.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,6 +25,13 @@ void main() async {
     await TrayService.instance.init();
     await NotificationService.instance.init();
   }
+
+  // Log de inicialização do app
+  LoggingService.instance.info(
+    LogCategory.execution,
+    'Aplicação iniciada',
+    details: 'SeusDADOS Client iniciado em ${Platform.operatingSystem}',
+  );
 
   runApp(const MainApp());
 }
@@ -84,6 +93,7 @@ class MainApp extends StatelessWidget {
                   const DashboardLayout(initialIndex: 2),
               '/schedule': (context) => const DashboardLayout(initialIndex: 4),
               '/settings': (context) => const DashboardLayout(initialIndex: 5),
+              '/logs': (context) => const DashboardLayout(initialIndex: 6),
             },
           );
         },

@@ -10,6 +10,7 @@ import 'scan_history_screen.dart';
 import 'schedule_screen.dart';
 import 'settings_screen.dart';
 import 'patterns_list_screen.dart';
+import 'logs_screen.dart';
 
 class DashboardLayout extends StatefulWidget {
   final int initialIndex;
@@ -33,6 +34,7 @@ class _DashboardLayoutState extends State<DashboardLayout> {
     const PatternsListScreen(),
     const ScheduleScreen(),
     const SettingsScreen(),
+    const LogsScreen(),
   ];
 
   static const int _maxBadgeCount = 99;
@@ -98,6 +100,11 @@ class _DashboardLayoutState extends State<DashboardLayout> {
       icon: Icons.settings,
       label: 'Configurações',
       route: '/settings',
+    ),
+    _NavItem(
+      icon: Icons.article_outlined,
+      label: 'Logs',
+      route: '/logs',
     ),
   ];
 
