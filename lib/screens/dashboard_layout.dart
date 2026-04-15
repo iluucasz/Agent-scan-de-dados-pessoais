@@ -30,11 +30,11 @@ class _DashboardLayoutState extends State<DashboardLayout> {
   final List<Widget> _screens = [
     const HomeScreen(),
     const ScanConfigScreen(),
-    const ScanHistoryScreen(),
-    const PatternsListScreen(),
     const ScheduleScreen(),
-    const SettingsScreen(),
+    const ScanHistoryScreen(),
     const LogsScreen(),
+    const PatternsListScreen(),
+    const SettingsScreen(),
   ];
 
   static const int _maxBadgeCount = 99;
@@ -82,9 +82,19 @@ class _DashboardLayoutState extends State<DashboardLayout> {
       route: '/scan-config',
     ),
     _NavItem(
+      icon: Icons.schedule,
+      label: 'Agendamento',
+      route: '/schedule',
+    ),
+    _NavItem(
       icon: Icons.history,
       label: 'Histórico',
       route: '/scan-history',
+    ),
+    _NavItem(
+      icon: Icons.article_outlined,
+      label: 'Logs',
+      route: '/logs',
     ),
     _NavItem(
       icon: Icons.list_alt,
@@ -92,19 +102,9 @@ class _DashboardLayoutState extends State<DashboardLayout> {
       route: '/patterns',
     ),
     _NavItem(
-      icon: Icons.schedule,
-      label: 'Agendamento',
-      route: '/schedule',
-    ),
-    _NavItem(
       icon: Icons.settings,
       label: 'Configurações',
       route: '/settings',
-    ),
-    _NavItem(
-      icon: Icons.article_outlined,
-      label: 'Logs',
-      route: '/logs',
     ),
   ];
 

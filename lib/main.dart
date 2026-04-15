@@ -84,16 +84,16 @@ class MainApp extends StatelessWidget {
               '/dashboard': (context) => const DashboardLayout(initialIndex: 0),
               '/login': (context) => const LoginScreen(),
               '/components-demo': (context) => const ComponentsDemoScreen(),
-              '/patterns': (context) => const DashboardLayout(initialIndex: 3),
               '/scan-config': (context) =>
                   const DashboardLayout(initialIndex: 1),
+              '/schedule': (context) => const DashboardLayout(initialIndex: 2),
+              '/scan-history': (context) =>
+                  const DashboardLayout(initialIndex: 3),
+              '/logs': (context) => const DashboardLayout(initialIndex: 4),
+              '/patterns': (context) => const DashboardLayout(initialIndex: 5),
+              '/settings': (context) => const DashboardLayout(initialIndex: 6),
               '/scan-progress': (context) => const ScanProgressScreen(),
               '/scan-results': (context) => const ScanResultsScreen(),
-              '/scan-history': (context) =>
-                  const DashboardLayout(initialIndex: 2),
-              '/schedule': (context) => const DashboardLayout(initialIndex: 4),
-              '/settings': (context) => const DashboardLayout(initialIndex: 5),
-              '/logs': (context) => const DashboardLayout(initialIndex: 6),
             },
           );
         },
