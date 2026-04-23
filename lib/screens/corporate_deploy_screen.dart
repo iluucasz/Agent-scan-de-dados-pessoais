@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart';
 import '../theme/app_colors.dart';
 
 class CorporateDeployScreen extends StatefulWidget {
@@ -12,8 +14,7 @@ class CorporateDeployScreen extends StatefulWidget {
 class _CorporateDeployScreenState extends State<CorporateDeployScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-
-  static const _orgToken = 'ORG-XXXX-YYYY-ZZZZ'; // placeholder
+  bool _tokenVisible = false;
 
   static const _guides = [
     _DeployGuide(
@@ -23,15 +24,17 @@ class _CorporateDeployScreenState extends State<CorporateDeployScreen>
         '1. Copie o instalador para um compartilhamento de rede acessível:',
         r'   \\servidor\pacotes\SeusDados.msi',
         '',
-        '2. No Active Directory, crie um GPO em:',
+        '2. No Active Directory, abra o Group Policy Management',
+        '',
+        '3. Crie um novo GPO ou edite um existente:',
         '   Configuração do Computador > Políticas >',
         '   Configurações de Software > Instalação de Software',
         '',
-        '3. Aponte para o caminho UNC do .msi',
+        '4. Aponte para o caminho UNC do .msi',
         '',
-        '4. Aplique ao grupo/OU desejado',
+        '5. Aplique ao grupo/OU desejado',
         '',
-        '5. Os endpoints instalam automaticamente no próximo logon',
+        '6. Os endpoints instalam automaticamente no próximo logon/reboot',
       ],
       command:
           r'msiexec /i \\servidor\pacotes\SeusDados.msi /qn TOKEN=<seu_token>',
@@ -40,7 +43,8 @@ class _CorporateDeployScreenState extends State<CorporateDeployScreen>
       label: 'PowerShell',
       icon: Icons.terminal,
       steps: [
-        '1. Certifique-se que WinRM está habilitado nas máquinas alvo',
+        '1. Certifique-se que WinRM está habilitado nas máquinas alvo:',
+        '   winrm quickconfig',
         '',
         '2. Execute o script abaixo na máquina de gerenciamento:',
       ],
@@ -54,7 +58,8 @@ Invoke-Command -ComputerName \$computers -ScriptBlock {
       label: 'Intune',
       icon: Icons.cloud_outlined,
       steps: [
-        '1. Converta o .exe para .intunewin com a Microsoft Win32 Content Prep Tool',
+        '1. Converta o .exe para .intunewin com a ferramenta:',
+        '   Microsoft Win32 Content Prep Tool',
         '',
         '2. No Intune Portal > Apps > Windows > Add App (Win32)',
         '',
@@ -64,7 +69,7 @@ Invoke-Command -ComputerName \$computers -ScriptBlock {
         '4. Uninstall command:',
         '   SeusDados.exe /uninstall /silent',
         '',
-        '5. Detection rule: verificar chave de registro',
+        '5. Detection rule: verificar chave de registro:',
         r'   HKLM\Software\SeusDados\AgentVersion',
         '',
         '6. Atribua ao grupo de dispositivos desejado',
@@ -75,7 +80,7 @@ Invoke-Command -ComputerName \$computers -ScriptBlock {
       label: 'SCCM / MECM',
       icon: Icons.dns_outlined,
       steps: [
-        '1. Crie um Application ou Package no SCCM',
+        '1. Crie um Application ou Package no SCCM/MECM',
         '',
         '2. Install Program:',
         '   SeusDados.exe /silent /token=<seu_token>',
@@ -83,6 +88,8 @@ Invoke-Command -ComputerName \$computers -ScriptBlock {
         '3. Crie um Deployment para a Collection desejada',
         '',
         '4. Defina janela de manutenção se necessário',
+        '',
+        '5. Monitore o status em Monitoring > Deployments',
       ],
       command: 'SeusDados.exe /silent /token=<seu_token>',
     ),
@@ -90,14 +97,16 @@ Invoke-Command -ComputerName \$computers -ScriptBlock {
       label: 'PDQ Deploy',
       icon: Icons.rocket_launch_outlined,
       steps: [
-        '1. Crie um novo Package no PDQ Deploy',
+        '1. No PDQ Deploy, crie um novo Package',
         '',
         '2. Step 1 > Install:',
         '   SeusDados.exe /silent /token=<seu_token>',
         '',
         '3. Selecione os targets (computadores ou grupos)',
         '',
-        '4. Clique em Deploy Now ou agende para uma janela de manutenção',
+        '4. Deploy Now ou agende para uma janela de manutenção',
+        '',
+        '5. Acompanhe o status na coluna de resultados',
       ],
       command: 'SeusDados.exe /silent /token=<seu_token>',
     ),
@@ -128,7 +137,8 @@ Invoke-Command -ComputerName \$computers -ScriptBlock {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final cs = theme.colorScheme;
+    final authToken =
+        context.watch<AuthProvider>().token ?? '';
 
     return Scaffold(
       backgroundColor: AppColors.gray50,
@@ -137,158 +147,66 @@ Invoke-Command -ComputerName \$computers -ScriptBlock {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Header ──────────────────────────────────────────
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary100,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(
-                    Icons.corporate_fare,
-                    size: 28,
-                    color: AppColors.primary600,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Deploy Corporativo',
-                      style: theme.textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Distribua o Agent em massa sem interação do usuário',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: AppColors.gray500,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-
+            _buildHeader(theme),
             const SizedBox(height: 32),
-
-            // ── Cards superiores ─────────────────────────────────
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Token de provisionamento
-                Expanded(child: _buildTokenCard(cs, theme)),
+                Expanded(child: _buildTokenCard(theme, authToken)),
                 const SizedBox(width: 20),
-                // Instalador
-                Expanded(child: _buildInstallerCard(cs, theme)),
+                Expanded(child: _buildInstallerCard(theme, authToken)),
               ],
             ),
-
             const SizedBox(height: 32),
-
-            // ── Guias de deploy ──────────────────────────────────
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.gray200),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.menu_book_outlined,
-                            color: AppColors.primary600, size: 20),
-                        const SizedBox(width: 10),
-                        Text(
-                          'Guias de Deploy',
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  TabBar(
-                    controller: _tabController,
-                    isScrollable: true,
-                    tabAlignment: TabAlignment.start,
-                    labelColor: AppColors.primary600,
-                    unselectedLabelColor: AppColors.gray500,
-                    indicatorColor: AppColors.primary600,
-                    indicatorSize: TabBarIndicatorSize.label,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    tabs: _guides
-                        .map((g) => Tab(
-                              child: Row(
-                                children: [
-                                  Icon(g.icon, size: 16),
-                                  const SizedBox(width: 6),
-                                  Text(g.label),
-                                ],
-                              ),
-                            ))
-                        .toList(),
-                  ),
-                  const Divider(height: 1),
-                  SizedBox(
-                    height: 380,
-                    child: TabBarView(
-                      controller: _tabController,
-                      children: _guides
-                          .map((g) => _buildGuideContent(g, cs))
-                          .toList(),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
+            _buildGuidesCard(theme, authToken),
             const SizedBox(height: 24),
-
-            // ── Aviso informativo ────────────────────────────────
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: const Color(0xFFEFF6FF),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFFBFDBFE)),
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Icon(Icons.info_outline,
-                      color: Color(0xFF2563EB), size: 20),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      'O token de provisionamento autentica a organização, não o usuário individual. '
-                      'O Agent instalado via GPO usa esse token para se registrar automaticamente '
-                      'sem que o colaborador precise fazer login.',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: const Color(0xFF1D4ED8),
-                        height: 1.5,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            _buildInfoBanner(theme),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildTokenCard(ColorScheme cs, ThemeData theme) {
+  Widget _buildHeader(ThemeData theme) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: AppColors.primary100,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: const Icon(
+            Icons.corporate_fare,
+            size: 28,
+            color: AppColors.primary600,
+          ),
+        ),
+        const SizedBox(width: 16),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Deploy Corporativo',
+              style: theme.textTheme.headlineSmall
+                  ?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Distribua o Agent em massa via GPO, Intune, SCCM ou PDQ',
+              style: theme.textTheme.bodyMedium
+                  ?.copyWith(color: AppColors.gray500),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTokenCard(ThemeData theme, String authToken) {
+    final displayToken =
+        _tokenVisible ? authToken : '•' * authToken.length;
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -304,17 +222,14 @@ Invoke-Command -ComputerName \$computers -ScriptBlock {
               const Icon(Icons.vpn_key_outlined,
                   color: AppColors.primary600, size: 20),
               const SizedBox(width: 8),
-              Text(
-                'Token de Provisionamento',
-                style: theme.textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+              Text('Token de Provisionamento',
+                  style: theme.textTheme.titleSmall
+                      ?.copyWith(fontWeight: FontWeight.bold)),
             ],
           ),
           const SizedBox(height: 6),
           Text(
-            'Use este token no instalador para autenticar a organização automaticamente.',
+            'Use este token no instalador para autenticar a organização automaticamente, sem login do colaborador.',
             style: theme.textTheme.bodySmall
                 ?.copyWith(color: AppColors.gray500, height: 1.4),
           ),
@@ -331,21 +246,38 @@ Invoke-Command -ComputerName \$computers -ScriptBlock {
               children: [
                 Expanded(
                   child: Text(
-                    _orgToken,
-                    style: const TextStyle(
+                    displayToken,
+                    style: TextStyle(
                       fontFamily: 'monospace',
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.primary700,
-                      letterSpacing: 1,
+                      color: _tokenVisible
+                          ? AppColors.primary700
+                          : AppColors.gray400,
+                      letterSpacing: _tokenVisible ? 1.0 : 0,
                     ),
                   ),
                 ),
                 IconButton(
+                  icon: Icon(
+                    _tokenVisible
+                        ? Icons.visibility_off_outlined
+                        : Icons.visibility_outlined,
+                    size: 18,
+                  ),
+                  color: AppColors.gray400,
+                  tooltip: _tokenVisible ? 'Ocultar token' : 'Mostrar token',
+                  onPressed: () =>
+                      setState(() => _tokenVisible = !_tokenVisible),
+                  constraints: const BoxConstraints(),
+                  padding: const EdgeInsets.all(4),
+                ),
+                const SizedBox(width: 4),
+                IconButton(
                   icon: const Icon(Icons.copy, size: 18),
-                  color: AppColors.gray500,
+                  color: AppColors.gray400,
                   tooltip: 'Copiar token',
-                  onPressed: () => _copy(_orgToken),
+                  onPressed: () => _copy(authToken),
                   constraints: const BoxConstraints(),
                   padding: const EdgeInsets.all(4),
                 ),
@@ -354,12 +286,11 @@ Invoke-Command -ComputerName \$computers -ScriptBlock {
           ),
           const SizedBox(height: 12),
           OutlinedButton.icon(
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                    content: Text('Funcionalidade disponível em breve')),
-              );
-            },
+            onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                  content: Text('Disponível em breve'),
+                  duration: Duration(seconds: 2)),
+            ),
             icon: const Icon(Icons.refresh, size: 16),
             label: const Text('Gerar novo token'),
             style: OutlinedButton.styleFrom(
@@ -373,7 +304,7 @@ Invoke-Command -ComputerName \$computers -ScriptBlock {
     );
   }
 
-  Widget _buildInstallerCard(ColorScheme cs, ThemeData theme) {
+  Widget _buildInstallerCard(ThemeData theme, String authToken) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -389,29 +320,26 @@ Invoke-Command -ComputerName \$computers -ScriptBlock {
               const Icon(Icons.download_outlined,
                   color: AppColors.primary600, size: 20),
               const SizedBox(width: 8),
-              Text(
-                'Instalador',
-                style: theme.textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+              Text('Instalador',
+                  style: theme.textTheme.titleSmall
+                      ?.copyWith(fontWeight: FontWeight.bold)),
             ],
           ),
           const SizedBox(height: 6),
           Text(
-            'Pacote para distribuição silenciosa via GPO, Intune, SCCM ou PDQ.',
+            'Pacote para distribuição silenciosa. Compatível com GPO, Intune, SCCM e PDQ.',
             style: theme.textTheme.bodySmall
                 ?.copyWith(color: AppColors.gray500, height: 1.4),
           ),
           const SizedBox(height: 16),
-          _buildInstallerRow(theme, Icons.file_present_outlined, 'SeusDados.exe',
-              'Instalador Windows (silent)'),
+          _buildFileRow(theme, Icons.file_present_outlined, 'SeusDados.exe',
+              'Instalador Windows — suporte a /silent'),
           const SizedBox(height: 8),
-          _buildInstallerRow(theme, Icons.inventory_2_outlined, 'SeusDados.msi',
-              'Pacote MSI para GPO/SCCM'),
+          _buildFileRow(theme, Icons.inventory_2_outlined, 'SeusDados.msi',
+              'Pacote MSI — ideal para GPO e SCCM'),
           const SizedBox(height: 16),
           Container(
-            padding: const EdgeInsets.all(10),
+            padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: AppColors.gray50,
               borderRadius: BorderRadius.circular(8),
@@ -421,14 +349,14 @@ Invoke-Command -ComputerName \$computers -ScriptBlock {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Instalação silenciosa',
+                  'INSTALAÇÃO SILENCIOSA',
                   style: theme.textTheme.labelSmall?.copyWith(
-                    color: AppColors.gray500,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 0.5,
+                    color: AppColors.gray400,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.8,
                   ),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 8),
                 Row(
                   children: [
                     Expanded(
@@ -444,9 +372,9 @@ Invoke-Command -ComputerName \$computers -ScriptBlock {
                     IconButton(
                       icon: const Icon(Icons.copy, size: 16),
                       color: AppColors.gray400,
-                      tooltip: 'Copiar comando',
-                      onPressed: () =>
-                          _copy('SeusDados.exe /silent /token=$_orgToken'),
+                      tooltip: 'Copiar',
+                      onPressed: () => _copy(
+                          'SeusDados.exe /silent /token=$authToken'),
                       constraints: const BoxConstraints(),
                       padding: const EdgeInsets.all(4),
                     ),
@@ -460,7 +388,7 @@ Invoke-Command -ComputerName \$computers -ScriptBlock {
     );
   }
 
-  Widget _buildInstallerRow(
+  Widget _buildFileRow(
       ThemeData theme, IconData icon, String name, String subtitle) {
     return Row(
       children: [
@@ -472,7 +400,8 @@ Invoke-Command -ComputerName \$computers -ScriptBlock {
             children: [
               Text(name,
                   style: theme.textTheme.bodySmall?.copyWith(
-                      fontWeight: FontWeight.w600, color: AppColors.gray700)),
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.gray700)),
               Text(subtitle,
                   style: theme.textTheme.labelSmall
                       ?.copyWith(color: AppColors.gray400)),
@@ -480,12 +409,11 @@ Invoke-Command -ComputerName \$computers -ScriptBlock {
           ),
         ),
         TextButton.icon(
-          onPressed: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                  content: Text('Download disponível em breve')),
-            );
-          },
+          onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+                content: Text('Download disponível em breve'),
+                duration: Duration(seconds: 2)),
+          ),
           icon: const Icon(Icons.download, size: 14),
           label: const Text('Baixar'),
           style: TextButton.styleFrom(
@@ -498,7 +426,77 @@ Invoke-Command -ComputerName \$computers -ScriptBlock {
     );
   }
 
-  Widget _buildGuideContent(_DeployGuide guide, ColorScheme cs) {
+  Widget _buildGuidesCard(ThemeData theme, String authToken) {
+    final guides = _guides
+        .map((g) => _DeployGuide(
+              label: g.label,
+              icon: g.icon,
+              steps: g.steps,
+              command: g.command.replaceAll('<seu_token>', authToken),
+            ))
+        .toList();
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.gray200),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+            child: Row(
+              children: [
+                const Icon(Icons.menu_book_outlined,
+                    color: AppColors.primary600, size: 20),
+                const SizedBox(width: 10),
+                Text(
+                  'Guias de Deploy',
+                  style: theme.textTheme.titleMedium
+                      ?.copyWith(fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          TabBar(
+            controller: _tabController,
+            isScrollable: true,
+            tabAlignment: TabAlignment.start,
+            labelColor: AppColors.primary600,
+            unselectedLabelColor: AppColors.gray500,
+            indicatorColor: AppColors.primary600,
+            indicatorSize: TabBarIndicatorSize.label,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            tabs: _guides
+                .map((g) => Tab(
+                      child: Row(
+                        children: [
+                          Icon(g.icon, size: 16),
+                          const SizedBox(width: 6),
+                          Text(g.label),
+                        ],
+                      ),
+                    ))
+                .toList(),
+          ),
+          const Divider(height: 1),
+          SizedBox(
+            height: 380,
+            child: TabBarView(
+              controller: _tabController,
+              children:
+                  guides.map((g) => _buildGuideContent(g)).toList(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGuideContent(_DeployGuide guide) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Column(
@@ -521,16 +519,16 @@ Invoke-Command -ComputerName \$computers -ScriptBlock {
             ),
           ),
           const SizedBox(height: 16),
-          Text(
-            'Comando',
+          const Text(
+            'COMANDO',
             style: TextStyle(
               fontSize: 11,
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.w700,
               color: AppColors.gray400,
-              letterSpacing: 0.5,
+              letterSpacing: 0.8,
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(14),
@@ -562,6 +560,36 @@ Invoke-Command -ComputerName \$computers -ScriptBlock {
                   padding: const EdgeInsets.all(4),
                 ),
               ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoBanner(ThemeData theme) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFEFF6FF),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFBFDBFE)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.info_outline,
+              color: Color(0xFF2563EB), size: 20),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              'O token de provisionamento identifica a organização, não o usuário. '
+              'O Agent instalado via GPO usa esse token para se registrar automaticamente — '
+              'o colaborador não precisa fazer login.',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: const Color(0xFF1D4ED8),
+                height: 1.5,
+              ),
             ),
           ),
         ],
