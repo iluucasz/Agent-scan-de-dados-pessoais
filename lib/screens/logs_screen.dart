@@ -57,8 +57,7 @@ class _LogsScreenState extends State<LogsScreen> {
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: FilledButton.styleFrom(
-                backgroundColor: AppColors.danger600),
+            style: FilledButton.styleFrom(backgroundColor: AppColors.danger600),
             child: const Text('Limpar'),
           ),
         ],

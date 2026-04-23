@@ -47,12 +47,9 @@ class LoggingService {
       )
     ''');
 
-    await db.execute(
-        'CREATE INDEX idx_logs_timestamp ON logs(timestamp DESC)');
-    await db.execute(
-        'CREATE INDEX idx_logs_level ON logs(level)');
-    await db.execute(
-        'CREATE INDEX idx_logs_category ON logs(category)');
+    await db.execute('CREATE INDEX idx_logs_timestamp ON logs(timestamp DESC)');
+    await db.execute('CREATE INDEX idx_logs_level ON logs(level)');
+    await db.execute('CREATE INDEX idx_logs_category ON logs(category)');
   }
 
   // ---------- write ----------
@@ -78,16 +75,14 @@ class LoggingService {
     }
   }
 
-  Future<void> info(LogCategory category, String message,
-          {String? details}) =>
+  Future<void> info(LogCategory category, String message, {String? details}) =>
       log(LogLevel.info, category, message, details: details);
 
   Future<void> warning(LogCategory category, String message,
           {String? details}) =>
       log(LogLevel.warning, category, message, details: details);
 
-  Future<void> error(LogCategory category, String message,
-          {String? details}) =>
+  Future<void> error(LogCategory category, String message, {String? details}) =>
       log(LogLevel.error, category, message, details: details);
 
   // ---------- read ----------

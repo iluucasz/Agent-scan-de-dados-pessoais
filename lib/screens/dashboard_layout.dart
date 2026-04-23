@@ -11,6 +11,7 @@ import 'schedule_screen.dart';
 import 'settings_screen.dart';
 import 'patterns_list_screen.dart';
 import 'logs_screen.dart';
+import 'corporate_deploy_screen.dart';
 
 class DashboardLayout extends StatefulWidget {
   final int initialIndex;
@@ -34,6 +35,7 @@ class _DashboardLayoutState extends State<DashboardLayout> {
     const ScanHistoryScreen(),
     const LogsScreen(),
     const PatternsListScreen(),
+    const CorporateDeployScreen(),
     const SettingsScreen(),
   ];
 
@@ -100,6 +102,11 @@ class _DashboardLayoutState extends State<DashboardLayout> {
       icon: Icons.list_alt,
       label: 'Padrões de Dados',
       route: '/patterns',
+    ),
+    _NavItem(
+      icon: Icons.corporate_fare,
+      label: 'Deploy Corporativo',
+      route: '/corporate-deploy',
     ),
     _NavItem(
       icon: Icons.settings,
