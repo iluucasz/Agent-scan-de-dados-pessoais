@@ -19,7 +19,6 @@ class AuthProvider with ChangeNotifier {
   // Estado do fluxo Agent OTP
   bool _isAwaitingOtp = false;
   String? _pendingAgentEmail;
-  String? _pendingAgentToken;
 
   User? get user => _user;
   Organization? get organization => _organization;
@@ -30,6 +29,19 @@ class AuthProvider with ChangeNotifier {
   ApiService get apiService => _apiService;
   bool get isAwaitingOtp => _isAwaitingOtp;
   String? get pendingAgentEmail => _pendingAgentEmail;
+
+  Future<void> initialize({String? provisioningToken}) async {
+    await checkStoredAuth();
+
+    final normalizedToken = provisioningToken?.trim();
+    if (_isAuthenticated ||
+        normalizedToken == null ||
+        normalizedToken.isEmpty) {
+      return;
+    }
+
+    await bootstrapWithProvisioningToken(normalizedToken);
+  }
 
   // Verifica se há autenticação armazenada (similar ao checkStoredAuth do React)
   Future<void> checkStoredAuth() async {
@@ -112,6 +124,42 @@ class AuthProvider with ChangeNotifier {
     return token.startsWith('eyJ');
   }
 
+  Future<void> _loadOrganizationForToken(String accessToken) async {
+    _organization = null;
+
+    if (accessToken.isEmpty) {
+      return;
+    }
+
+    _apiService.setToken(accessToken);
+    try {
+      final meResponse = await _apiService.getMe();
+      final orgData = meResponse['organization'] as Map<String, dynamic>?;
+      if (orgData != null) {
+        _organization = Organization.fromJson(orgData);
+      }
+    } catch (e) {
+      debugPrint('⚠️  Não foi possível buscar organização: $e');
+    }
+  }
+
+  Future<void> _completeAgentSession(
+    Map<String, dynamic> userData,
+    String accessToken,
+  ) async {
+    _user = User.fromJson(userData, token: accessToken);
+    await _loadOrganizationForToken(accessToken);
+    await _saveAuthData(accessToken, _user!, _organization);
+
+    _isAuthenticated = true;
+    _isAwaitingOtp = false;
+    _pendingAgentEmail = null;
+    _errorMessage = null;
+    _isLoading = false;
+
+    notifyListeners();
+  }
+
   // Login com token (auto-detecta JWT vs token de agent)
   Future<bool> login(String token) async {
     _isLoading = true;
@@ -191,7 +239,6 @@ class AuthProvider with ChangeNotifier {
 
       // Guardar estado para step 2
       _pendingAgentEmail = email;
-      _pendingAgentToken = token;
       _isAwaitingOtp = true;
       _isLoading = false;
       _errorMessage = null;
@@ -242,33 +289,13 @@ class AuthProvider with ChangeNotifier {
       debugPrint('✅ Agent user data: $userData');
       debugPrint('✅ Agent orgScope: $orgScope');
 
-      _user = User.fromJson(userData, token: accessToken);
-
-      // Tentar buscar organização com o JWT recém-obtido
-      if (accessToken.isNotEmpty) {
-        _apiService.setToken(accessToken);
-        try {
-          final meResponse = await _apiService.getMe();
-          final orgData = meResponse['organization'] as Map<String, dynamic>?;
-          if (orgData != null) {
-            _organization = Organization.fromJson(orgData);
-          }
-        } catch (e) {
-          debugPrint('⚠️  Não foi possível buscar organização: $e');
-        }
+      if (accessToken.isEmpty) {
+        throw Exception('JWT não retornado pelo backend');
       }
 
-      await _saveAuthData(accessToken, _user!, _organization);
-
-      _isAuthenticated = true;
-      _isAwaitingOtp = false;
-      _pendingAgentEmail = null;
-      _pendingAgentToken = null;
-      _errorMessage = null;
-      _isLoading = false;
+      await _completeAgentSession(userData, accessToken);
 
       debugPrint('✅ Login Agent bem-sucedido: ${_user?.name}');
-      notifyListeners();
       return true;
     } catch (e) {
       debugPrint('❌ Erro no fluxo agent verify-otp: $e');
@@ -281,11 +308,48 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
+  Future<bool> bootstrapWithProvisioningToken(String token) async {
+    final normalizedToken = token.trim();
+    if (normalizedToken.isEmpty) {
+      _errorMessage = 'Token de provisionamento inválido.';
+      notifyListeners();
+      return false;
+    }
+
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final response =
+          await _apiService.exchangeProvisioningToken(normalizedToken);
+
+      final userData = response['user'] as Map<String, dynamic>;
+      final accessToken = userData['accessToken'] as String? ?? '';
+
+      if (accessToken.isEmpty) {
+        throw Exception('JWT não retornado pelo backend');
+      }
+
+      await _completeAgentSession(userData, accessToken);
+      debugPrint('✅ Bootstrap corporativo concluído: ${_user?.email}');
+      return true;
+    } catch (e) {
+      debugPrint('❌ Erro no bootstrap corporativo: $e');
+
+      _errorMessage = e.toString().replaceFirst('Exception: ', '');
+      _isAuthenticated = false;
+      _isLoading = false;
+
+      notifyListeners();
+      return false;
+    }
+  }
+
   // Cancelar fluxo Agent OTP e voltar para tela de token
   void cancelAgentOtp() {
     _isAwaitingOtp = false;
     _pendingAgentEmail = null;
-    _pendingAgentToken = null;
     _errorMessage = null;
     notifyListeners();
   }

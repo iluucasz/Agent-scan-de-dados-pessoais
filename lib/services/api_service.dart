@@ -25,6 +25,8 @@ class ApiService {
   // Agent auth endpoints
   static const String agentVerifyTokenEndpoint = '/api/auth/agent/verify-token';
   static const String agentVerifyOtpEndpoint = '/api/auth/agent/verify-otp';
+  static const String agentExchangeTokenEndpoint =
+      '/api/auth/agent/exchange-token';
 
   // Áreas e Processos
   static const String areasEndpoint = '/api/areas';
@@ -93,7 +95,7 @@ class ApiService {
   // Step 1 do fluxo Agent: envia token permanente, backend dispara OTP por e-mail
   // Retorna { challenge_id, next, email }
   Future<Map<String, dynamic>> agentVerifyToken(String token) async {
-    final url = '$baseUrl$agentVerifyTokenEndpoint';
+    const url = '$baseUrl$agentVerifyTokenEndpoint';
     debugPrint('🌐 agentVerifyToken: POST $url');
     late final http.Response response;
     try {
@@ -126,7 +128,7 @@ class ApiService {
 
   // Step 2 do fluxo Agent: envia email + código OTP, retorna JWT + user + orgScope
   Future<Map<String, dynamic>> agentVerifyOtp(String email, String code) async {
-    final url = '$baseUrl$agentVerifyOtpEndpoint';
+    const url = '$baseUrl$agentVerifyOtpEndpoint';
     debugPrint('🌐 agentVerifyOtp: POST $url');
     late final http.Response response;
     try {
@@ -153,6 +155,44 @@ class ApiService {
       final msg = body['message'] ?? 'Código inválido ou expirado';
       throw Exception(msg);
     }
+  }
+
+  // Fluxo headless do Agent: troca token de provisionamento por JWT
+  Future<Map<String, dynamic>> exchangeProvisioningToken(String token) async {
+    final normalizedToken = token.trim();
+    if (normalizedToken.isEmpty) {
+      throw Exception('Token de provisionamento inválido');
+    }
+
+    const url = '$baseUrl$agentExchangeTokenEndpoint';
+    debugPrint('🌐 exchangeProvisioningToken: POST $url');
+    late final http.Response response;
+
+    try {
+      response = await http.post(
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode({'token': normalizedToken}),
+      );
+    } catch (e) {
+      debugPrint('🌐 exchangeProvisioningToken: erro de rede: $e');
+      throw Exception('Erro de conexão com o servidor');
+    }
+
+    debugPrint('🌐 exchangeProvisioningToken: status=${response.statusCode}');
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body) as Map<String, dynamic>;
+    }
+
+    final body = response.body.isNotEmpty
+        ? jsonDecode(response.body) as Map<String, dynamic>
+        : <String, dynamic>{};
+    final msg = body['message'] ??
+        'Erro ao trocar token de provisionamento: ${response.statusCode}';
+    throw Exception(msg);
   }
 
   // Buscar dados atualizados do usuário autenticado (reutiliza token armazenado)

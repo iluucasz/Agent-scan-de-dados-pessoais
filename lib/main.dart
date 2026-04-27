@@ -17,8 +17,37 @@ import 'services/notification_service.dart';
 import 'services/logging_service.dart';
 import 'models/log_entry.dart';
 
-void main() async {
+String? _extractProvisioningToken(List<String> args) {
+  for (var index = 0; index < args.length; index++) {
+    final arg = args[index].trim();
+    if (arg.isEmpty) {
+      continue;
+    }
+
+    final normalizedArg = arg.toLowerCase();
+    if (normalizedArg.startsWith('/token=')) {
+      final token = arg.substring('/token='.length).trim();
+      return token.isEmpty ? null : token;
+    }
+
+    if (normalizedArg.startsWith('--token=')) {
+      final token = arg.substring('--token='.length).trim();
+      return token.isEmpty ? null : token;
+    }
+
+    if ((normalizedArg == '/token' || normalizedArg == '--token') &&
+        index + 1 < args.length) {
+      final token = args[index + 1].trim();
+      return token.isEmpty ? null : token;
+    }
+  }
+
+  return null;
+}
+
+void main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
+  final provisioningToken = _extractProvisioningToken(args);
 
   // System tray e notificações apenas em desktop (Windows/Linux/macOS).
   if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
@@ -30,21 +59,25 @@ void main() async {
   LoggingService.instance.info(
     LogCategory.execution,
     'Aplicação iniciada',
-    details: 'SeusDADOS Client iniciado em ${Platform.operatingSystem}',
+    details:
+        'SeusDADOS Client iniciado em ${Platform.operatingSystem}; provisioningToken=${provisioningToken != null}',
   );
 
-  runApp(const MainApp());
+  runApp(MainApp(provisioningToken: provisioningToken));
 }
 
 class MainApp extends StatelessWidget {
-  const MainApp({super.key});
+  const MainApp({super.key, this.provisioningToken});
+
+  final String? provisioningToken;
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
-            create: (_) => AuthProvider()..checkStoredAuth()),
+            create: (_) => AuthProvider()
+              ..initialize(provisioningToken: provisioningToken)),
         ChangeNotifierProvider(create: (_) => ScanProvider()..initialize()),
         ChangeNotifierProvider(create: (_) => ScheduleProvider()..initialize()),
         ChangeNotifierProvider(create: (_) => SettingsProvider()..initialize()),
@@ -56,7 +89,7 @@ class MainApp extends StatelessWidget {
           // final isDarkMode = settingsProvider.settings.darkMode;
 
           return MaterialApp(
-            title: 'SeusDADOS Client',
+            title: 'PrivacyPulse',
             theme: AppTheme.lightTheme,
             // darkTheme: AppTheme.darkTheme,
             themeMode: ThemeMode.light,

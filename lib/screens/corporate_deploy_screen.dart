@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:provider/provider.dart';
-import '../providers/auth_provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../theme/app_colors.dart';
 
 class CorporateDeployScreen extends StatefulWidget {
@@ -13,102 +12,120 @@ class CorporateDeployScreen extends StatefulWidget {
 
 class _CorporateDeployScreenState extends State<CorporateDeployScreen>
     with SingleTickerProviderStateMixin {
+  static final Uri _agentCenterUri =
+      Uri.parse('https://pulse.seusdados.com/central-agentes');
+  static final Uri _agentDownloadUri = Uri.parse(
+    'https://privacypulse.nyc3.cdn.digitaloceanspaces.com/Agent/PrivacyPulse.exe',
+  );
+  static const String _portalTokenPlaceholder =
+      '<token_copiado_na_central_de_agentes>';
+  static const String _gpoCommandTemplate =
+      'PrivacyPulse.exe /silent /token=$_portalTokenPlaceholder';
+
   late TabController _tabController;
-  bool _tokenVisible = false;
 
   static const _guides = [
     _DeployGuide(
       label: 'GPO / AD',
       icon: Icons.account_tree_outlined,
       steps: [
-        '1. Copie o instalador para um compartilhamento de rede acessível:',
-        r'   \\servidor\pacotes\SeusDados.msi',
+        '1. Na Central de Agentes, copie o token corporativo da organização.',
         '',
-        '2. No Active Directory, abra o Group Policy Management',
+        '2. Copie o instalador do Agent para um compartilhamento de rede acessível:',
+        r'   \\servidor\pacotes\PrivacyPulse.exe',
         '',
-        '3. Crie um novo GPO ou edite um existente:',
-        '   Configuração do Computador > Políticas >',
-        '   Configurações de Software > Instalação de Software',
+        '3. No Active Directory, abra o Group Policy Management.',
         '',
-        '4. Aponte para o caminho UNC do .msi',
+        '4. Use Startup Script ou Scheduled Task para executar o Agent com o token.',
         '',
-        '5. Aplique ao grupo/OU desejado',
+        '5. Aplique o GPO à OU ou grupo desejado.',
         '',
-        '6. Os endpoints instalam automaticamente no próximo logon/reboot',
+        '6. No próximo boot/logon, a máquina consome o token e troca por JWT automaticamente.',
       ],
       command:
-          r'msiexec /i \\servidor\pacotes\SeusDados.msi /qn TOKEN=<seu_token>',
+          r'\\servidor\pacotes\PrivacyPulse.exe /silent /token=<token_copiado_na_central_de_agentes>',
     ),
     _DeployGuide(
       label: 'PowerShell',
       icon: Icons.terminal,
       steps: [
-        '1. Certifique-se que WinRM está habilitado nas máquinas alvo:',
+        '1. Na Central de Agentes, copie o token corporativo da organização.',
+        '',
+        '2. Certifique-se que WinRM está habilitado nas máquinas alvo:',
         '   winrm quickconfig',
         '',
-        '2. Execute o script abaixo na máquina de gerenciamento:',
+        '3. Execute o script abaixo na máquina de gerenciamento:',
       ],
       command: r'''\$computers = @("PC1", "PC2", "PC3")
 Invoke-Command -ComputerName \$computers -ScriptBlock {
-    Start-Process "\\servidor\pacotes\SeusDados.exe" `
-        -ArgumentList "/silent /token=<seu_token>" -Wait
+      Start-Process "\\servidor\pacotes\PrivacyPulse.exe" `
+        -ArgumentList "/silent /token=<token_copiado_na_central_de_agentes>" -Wait
 }''',
     ),
     _DeployGuide(
       label: 'Intune',
       icon: Icons.cloud_outlined,
       steps: [
-        '1. Converta o .exe para .intunewin com a ferramenta:',
+        '1. Na Central de Agentes, copie o token corporativo da organização.',
+        '',
+        '2. Converta o .exe para .intunewin com a ferramenta:',
         '   Microsoft Win32 Content Prep Tool',
         '',
-        '2. No Intune Portal > Apps > Windows > Add App (Win32)',
+        '3. No Intune Portal > Apps > Windows > Add App (Win32)',
         '',
-        '3. Install command:',
-        '   SeusDados.exe /silent /token=<seu_token>',
+        '4. Install command:',
+        '   PrivacyPulse.exe /silent /token=<token_copiado_na_central_de_agentes>',
         '',
-        '4. Uninstall command:',
-        '   SeusDados.exe /uninstall /silent',
+        '5. Uninstall command:',
+        '   PrivacyPulse.exe /uninstall /silent',
         '',
-        '5. Detection rule: verificar chave de registro:',
+        '6. Detection rule: verificar chave de registro:',
         r'   HKLM\Software\SeusDados\AgentVersion',
         '',
-        '6. Atribua ao grupo de dispositivos desejado',
+        '7. Atribua ao grupo de dispositivos desejado.',
       ],
-      command: 'SeusDados.exe /silent /token=<seu_token>',
+      command:
+          'PrivacyPulse.exe /silent /token=<token_copiado_na_central_de_agentes>',
     ),
     _DeployGuide(
       label: 'SCCM / MECM',
       icon: Icons.dns_outlined,
       steps: [
-        '1. Crie um Application ou Package no SCCM/MECM',
+        '1. Na Central de Agentes, copie o token corporativo da organização.',
         '',
-        '2. Install Program:',
-        '   SeusDados.exe /silent /token=<seu_token>',
+        '2. Crie um Application ou Package no SCCM/MECM.',
         '',
-        '3. Crie um Deployment para a Collection desejada',
+        '3. Install Program:',
+        '   PrivacyPulse.exe /silent /token=<token_copiado_na_central_de_agentes>',
         '',
-        '4. Defina janela de manutenção se necessário',
+        '4. Crie um Deployment para a Collection desejada.',
         '',
-        '5. Monitore o status em Monitoring > Deployments',
+        '5. Defina janela de manutenção se necessário.',
+        '',
+        '6. Monitore o status em Monitoring > Deployments.',
       ],
-      command: 'SeusDados.exe /silent /token=<seu_token>',
+      command:
+          'PrivacyPulse.exe /silent /token=<token_copiado_na_central_de_agentes>',
     ),
     _DeployGuide(
       label: 'PDQ Deploy',
       icon: Icons.rocket_launch_outlined,
       steps: [
-        '1. No PDQ Deploy, crie um novo Package',
+        '1. Na Central de Agentes, copie o token corporativo da organização.',
         '',
-        '2. Step 1 > Install:',
-        '   SeusDados.exe /silent /token=<seu_token>',
+        '2. No PDQ Deploy, crie um novo Package.',
         '',
-        '3. Selecione os targets (computadores ou grupos)',
+        '3. Step 1 > Install:',
+        '   PrivacyPulse.exe /silent /token=<token_copiado_na_central_de_agentes>',
         '',
-        '4. Deploy Now ou agende para uma janela de manutenção',
+        '4. Selecione os targets (computadores ou grupos).',
         '',
-        '5. Acompanhe o status na coluna de resultados',
+        '5. Deploy Now ou agende para uma janela de manutenção.',
+        '',
+        '6. Acompanhe o status na coluna de resultados.',
       ],
-      command: 'SeusDados.exe /silent /token=<seu_token>',
+      command:
+          'PrivacyPulse.exe /silent /token=<token_copiado_na_central_de_agentes>',
     ),
   ];
 
@@ -134,11 +151,39 @@ Invoke-Command -ComputerName \$computers -ScriptBlock {
     );
   }
 
+  Future<void> _openAgentCenter() async {
+    final ok = await launchUrl(
+      _agentCenterUri,
+      mode: LaunchMode.externalApplication,
+    );
+    if (!ok && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Não foi possível abrir a Central de Agentes.'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+  Future<void> _downloadAgent() async {
+    final ok = await launchUrl(
+      _agentDownloadUri,
+      mode: LaunchMode.externalApplication,
+    );
+    if (!ok && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Não foi possível abrir o download do Agent.'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final authToken =
-        context.watch<AuthProvider>().token ?? '';
 
     return Scaffold(
       backgroundColor: AppColors.gray50,
@@ -152,13 +197,13 @@ Invoke-Command -ComputerName \$computers -ScriptBlock {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(child: _buildTokenCard(theme, authToken)),
+                Expanded(child: _buildPortalCard(theme)),
                 const SizedBox(width: 20),
-                Expanded(child: _buildInstallerCard(theme, authToken)),
+                Expanded(child: _buildDistributionCard(theme)),
               ],
             ),
             const SizedBox(height: 32),
-            _buildGuidesCard(theme, authToken),
+            _buildGuidesCard(theme),
             const SizedBox(height: 24),
             _buildInfoBanner(theme),
           ],
@@ -193,7 +238,7 @@ Invoke-Command -ComputerName \$computers -ScriptBlock {
             ),
             const SizedBox(height: 4),
             Text(
-              'Distribua o Agent em massa via GPO, Intune, SCCM ou PDQ',
+              'Use o token da Central de Agentes e distribua via GPO, Intune, SCCM ou PDQ',
               style: theme.textTheme.bodyMedium
                   ?.copyWith(color: AppColors.gray500),
             ),
@@ -203,10 +248,7 @@ Invoke-Command -ComputerName \$computers -ScriptBlock {
     );
   }
 
-  Widget _buildTokenCard(ThemeData theme, String authToken) {
-    final displayToken =
-        _tokenVisible ? authToken : '•' * authToken.length;
-
+  Widget _buildPortalCard(ThemeData theme) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -219,83 +261,79 @@ Invoke-Command -ComputerName \$computers -ScriptBlock {
         children: [
           Row(
             children: [
-              const Icon(Icons.vpn_key_outlined,
+              const Icon(Icons.public_outlined,
                   color: AppColors.primary600, size: 20),
               const SizedBox(width: 8),
-              Text('Token de Provisionamento',
+              Text('Origem do Token',
                   style: theme.textTheme.titleSmall
                       ?.copyWith(fontWeight: FontWeight.bold)),
             ],
           ),
           const SizedBox(height: 6),
           Text(
-            'Use este token no instalador para autenticar a organização automaticamente, sem login do colaborador.',
+            'O token corporativo não é gerado neste Agent. A TI deve copiar o token na Central de Agentes do portal e usar esse valor na distribuição em massa.',
             style: theme.textTheme.bodySmall
                 ?.copyWith(color: AppColors.gray500, height: 1.4),
           ),
           const SizedBox(height: 16),
           Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: AppColors.gray50,
+              color: AppColors.info50,
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: AppColors.gray200),
+              border: Border.all(color: AppColors.info100),
             ),
-            child: Row(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: Text(
-                    displayToken,
-                    style: TextStyle(
-                      fontFamily: 'monospace',
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: _tokenVisible
-                          ? AppColors.primary700
-                          : AppColors.gray400,
-                      letterSpacing: _tokenVisible ? 1.0 : 0,
-                    ),
+                Text(
+                  'Fluxo recomendado',
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    color: AppColors.info700,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
-                IconButton(
-                  icon: Icon(
-                    _tokenVisible
-                        ? Icons.visibility_off_outlined
-                        : Icons.visibility_outlined,
-                    size: 18,
+                const SizedBox(height: 8),
+                Text(
+                  '1. Acesse a Central de Agentes no portal.',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: AppColors.info700,
                   ),
-                  color: AppColors.gray400,
-                  tooltip: _tokenVisible ? 'Ocultar token' : 'Mostrar token',
-                  onPressed: () =>
-                      setState(() => _tokenVisible = !_tokenVisible),
-                  constraints: const BoxConstraints(),
-                  padding: const EdgeInsets.all(4),
                 ),
-                const SizedBox(width: 4),
-                IconButton(
-                  icon: const Icon(Icons.copy, size: 18),
-                  color: AppColors.gray400,
-                  tooltip: 'Copiar token',
-                  onPressed: () => _copy(authToken),
-                  constraints: const BoxConstraints(),
-                  padding: const EdgeInsets.all(4),
+                Text(
+                  '2. Copie o token corporativo da organização.',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: AppColors.info700,
+                  ),
+                ),
+                Text(
+                  '3. Use esse token no comando de distribuição via GPO, Intune, SCCM ou PDQ.',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: AppColors.info700,
+                    height: 1.4,
+                  ),
                 ),
               ],
             ),
           ),
           const SizedBox(height: 12),
-          OutlinedButton.icon(
-            onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                  content: Text('Disponível em breve'),
-                  duration: Duration(seconds: 2)),
+          FilledButton.icon(
+            onPressed: _openAgentCenter,
+            icon: const Icon(Icons.open_in_new, size: 16),
+            label: const Text('Abrir Central de Agentes'),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.primary600,
+              foregroundColor: Colors.white,
+              textStyle: const TextStyle(fontSize: 13),
             ),
-            icon: const Icon(Icons.refresh, size: 16),
-            label: const Text('Gerar novo token'),
-            style: OutlinedButton.styleFrom(
+          ),
+          const SizedBox(height: 8),
+          TextButton.icon(
+            onPressed: () => _copy(_agentCenterUri.toString()),
+            icon: const Icon(Icons.copy, size: 16),
+            label: const Text('Copiar link do portal'),
+            style: TextButton.styleFrom(
               foregroundColor: AppColors.gray600,
-              side: const BorderSide(color: AppColors.gray300),
               textStyle: const TextStyle(fontSize: 13),
             ),
           ),
@@ -304,7 +342,7 @@ Invoke-Command -ComputerName \$computers -ScriptBlock {
     );
   }
 
-  Widget _buildInstallerCard(ThemeData theme, String authToken) {
+  Widget _buildDistributionCard(ThemeData theme) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -317,26 +355,96 @@ Invoke-Command -ComputerName \$computers -ScriptBlock {
         children: [
           Row(
             children: [
-              const Icon(Icons.download_outlined,
+              const Icon(Icons.approval_outlined,
                   color: AppColors.primary600, size: 20),
               const SizedBox(width: 8),
-              Text('Instalador',
+              Text('Distribuição pela TI',
                   style: theme.textTheme.titleSmall
                       ?.copyWith(fontWeight: FontWeight.bold)),
             ],
           ),
           const SizedBox(height: 6),
           Text(
-            'Pacote para distribuição silenciosa. Compatível com GPO, Intune, SCCM e PDQ.',
+            'O usuário final não precisa gerar token nem abrir PowerShell. A TI distribui o Agent já parametrizado com o token copiado do portal.',
             style: theme.textTheme.bodySmall
                 ?.copyWith(color: AppColors.gray500, height: 1.4),
           ),
           const SizedBox(height: 16),
-          _buildFileRow(theme, Icons.file_present_outlined, 'SeusDados.exe',
-              'Instalador Windows — suporte a /silent'),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: AppColors.gray50,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: AppColors.gray200),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'DOWNLOAD DO AGENT',
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: AppColors.gray400,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.8,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  _agentDownloadUri.toString(),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: AppColors.gray700,
+                    fontFamily: 'monospace',
+                    height: 1.4,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    FilledButton.icon(
+                      onPressed: _downloadAgent,
+                      icon: const Icon(Icons.download_outlined, size: 16),
+                      label: const Text('Baixar Agent'),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: AppColors.primary600,
+                        foregroundColor: Colors.white,
+                        textStyle: const TextStyle(fontSize: 13),
+                      ),
+                    ),
+                    OutlinedButton.icon(
+                      onPressed: () => _copy(_agentDownloadUri.toString()),
+                      icon: const Icon(Icons.copy, size: 16),
+                      label: const Text('Copiar link'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.gray600,
+                        side: const BorderSide(color: AppColors.gray300),
+                        textStyle: const TextStyle(fontSize: 13),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          _buildChecklistRow(
+            theme,
+            Icons.file_present_outlined,
+            'Baixe o Agent genérico no link acima e publique esse arquivo em um compartilhamento interno ou ferramenta de distribuição.',
+          ),
           const SizedBox(height: 8),
-          _buildFileRow(theme, Icons.inventory_2_outlined, 'SeusDados.msi',
-              'Pacote MSI — ideal para GPO e SCCM'),
+          _buildChecklistRow(
+            theme,
+            Icons.vpn_key_outlined,
+            'Copie o token corporativo na Central de Agentes.',
+          ),
+          const SizedBox(height: 8),
+          _buildChecklistRow(
+            theme,
+            Icons.account_tree_outlined,
+            'Use esse token no comando da ferramenta de distribuição escolhida.',
+          ),
           const SizedBox(height: 16),
           Container(
             padding: const EdgeInsets.all(12),
@@ -359,10 +467,10 @@ Invoke-Command -ComputerName \$computers -ScriptBlock {
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    Expanded(
+                    const Expanded(
                       child: Text(
-                        'SeusDados.exe /silent /token=<token>',
-                        style: const TextStyle(
+                        _gpoCommandTemplate,
+                        style: TextStyle(
                           fontFamily: 'monospace',
                           fontSize: 11,
                           color: AppColors.gray700,
@@ -372,9 +480,8 @@ Invoke-Command -ComputerName \$computers -ScriptBlock {
                     IconButton(
                       icon: const Icon(Icons.copy, size: 16),
                       color: AppColors.gray400,
-                      tooltip: 'Copiar',
-                      onPressed: () => _copy(
-                          'SeusDados.exe /silent /token=$authToken'),
+                      tooltip: 'Copiar comando modelo',
+                      onPressed: () => _copy(_gpoCommandTemplate),
                       constraints: const BoxConstraints(),
                       padding: const EdgeInsets.all(4),
                     ),
@@ -388,54 +495,26 @@ Invoke-Command -ComputerName \$computers -ScriptBlock {
     );
   }
 
-  Widget _buildFileRow(
-      ThemeData theme, IconData icon, String name, String subtitle) {
+  Widget _buildChecklistRow(ThemeData theme, IconData icon, String text) {
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Icon(icon, size: 18, color: AppColors.gray400),
         const SizedBox(width: 10),
         Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(name,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.gray700)),
-              Text(subtitle,
-                  style: theme.textTheme.labelSmall
-                      ?.copyWith(color: AppColors.gray400)),
-            ],
-          ),
-        ),
-        TextButton.icon(
-          onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-                content: Text('Download disponível em breve'),
-                duration: Duration(seconds: 2)),
-          ),
-          icon: const Icon(Icons.download, size: 14),
-          label: const Text('Baixar'),
-          style: TextButton.styleFrom(
-            foregroundColor: AppColors.primary600,
-            textStyle: const TextStyle(fontSize: 12),
-            visualDensity: VisualDensity.compact,
+          child: Text(
+            text,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: AppColors.gray700,
+              height: 1.4,
+            ),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildGuidesCard(ThemeData theme, String authToken) {
-    final guides = _guides
-        .map((g) => _DeployGuide(
-              label: g.label,
-              icon: g.icon,
-              steps: g.steps,
-              command: g.command.replaceAll('<seu_token>', authToken),
-            ))
-        .toList();
-
+  Widget _buildGuidesCard(ThemeData theme) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -487,8 +566,7 @@ Invoke-Command -ComputerName \$computers -ScriptBlock {
             height: 380,
             child: TabBarView(
               controller: _tabController,
-              children:
-                  guides.map((g) => _buildGuideContent(g)).toList(),
+              children: _guides.map((g) => _buildGuideContent(g)).toList(),
             ),
           ),
         ],
@@ -578,14 +656,12 @@ Invoke-Command -ComputerName \$computers -ScriptBlock {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.info_outline,
-              color: Color(0xFF2563EB), size: 20),
+          const Icon(Icons.info_outline, color: Color(0xFF2563EB), size: 20),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
-              'O token de provisionamento identifica a organização, não o usuário. '
-              'O Agent instalado via GPO usa esse token para se registrar automaticamente — '
-              'o colaborador não precisa fazer login.',
+              'O token corporativo vem da Central de Agentes no portal, não desta tela. '
+              'A TI usa esse token no comando de distribuição e o Agent troca esse valor por JWT automaticamente no primeiro bootstrap.',
               style: theme.textTheme.bodySmall?.copyWith(
                 color: const Color(0xFF1D4ED8),
                 height: 1.5,

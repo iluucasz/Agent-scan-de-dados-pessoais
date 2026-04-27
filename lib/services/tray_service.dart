@@ -42,10 +42,10 @@ class TrayService with TrayListener, WindowListener {
     final iconPath = '${exeDir}data\\flutter_assets\\assets\\icons\\$iconFile';
 
     await trayManager.setIcon(iconPath);
-    await trayManager.setToolTip('SeusDADOS');
+    await trayManager.setToolTip('PrivacyPulse');
 
     final menu = Menu(items: [
-      MenuItem(key: 'show', label: 'Abrir SeusDADOS'),
+      MenuItem(key: 'show', label: 'Abrir PrivacyPulse'),
       MenuItem.separator(),
       MenuItem(key: 'exit', label: 'Sair'),
     ]);

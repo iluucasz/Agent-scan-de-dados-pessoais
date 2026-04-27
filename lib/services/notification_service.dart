@@ -16,7 +16,7 @@ class NotificationService {
 
     try {
       await localNotifier.setup(
-        appName: 'SeusDADOS',
+        appName: 'PrivacyPulse',
         shortcutPolicy: ShortcutPolicy.requireCreate,
       );
       _initialized = true;
